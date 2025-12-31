@@ -3,9 +3,9 @@
   <tr>
     <td valign="center">
 <pre>
-    __  ______  __      ___     __
-   /  |/  /| | / /      | | /| / /
-  / /|_/ / | |/ /       | |/ |/ / 
+   __  ______  __      ___     __
+  /  |/  /| | / /      | | /| / /
+ / /|_/ / | |/ /       | |/ |/ / 
 /_/  /_/o |___/ie revie|__/|__/ 
 </pre>
     </td>
@@ -24,6 +24,9 @@
 
 
 ---
+
+<img src="images/welcome.png" width="49%" align="center">
+
 ```
   ▁▁     ╭─────────────────────────────────────╮
  ▁▁▁│    │ These are some demos when using MVW │
@@ -46,6 +49,9 @@ Everything that you can see in the config list can be configurable. From the pos
 ![Config Command](demos/demo-config.gif)
 
 ### Theme
+
+> NOTE: Some browser not fully support nerdfont rendering of `svg`, you can see below if it is supported.
+
 - Gruvbox (The Default Theme)
 ![Gruvbox](images/gruvbox.svg)
 
@@ -76,9 +82,9 @@ Everything that you can see in the config list can be configurable. From the pos
 | **Moai help** | Fun gimmick to help you in the process __(can be hide dont worry)__ |
 
 ```
-  ▁▁     ╭─────────────────────────────────────╮
- ▁▁▁│    │ Why am I at the bottom?             │
-┌┘└ ░▌   ╰─────────────────────────────────────╯
+  ▁▁     ╭─────────────────────────╮
+ ▁▁▁│    │ Why am I at the bottom? │
+┌┘└ ░▌   ╰─────────────────────────╯
 ╚═══╝    F: Cause heroes appear last.. right..                                  
 ```
 
@@ -101,6 +107,10 @@ And _also_, I just want to learn new things :)
 | pipx *(recommended)* | `pipx install mvw` |
 | uv | `uv tool install mvw` |
 | pip | `pip install mvw` |
+
+
+> NOTE: This CLI require a nerdfont to have the icon fully showed
+> --> This [repo](https://github.com/officialrajdeepsingh/nerd-fonts-installer) seems legit way to install [nerdfont](https://www.nerdfonts.com/) but its up to you how to install, google it, you got this!
 
 ## Usage
 
@@ -147,9 +157,9 @@ Settings are atuomatically configured using `mvw config`
 
 ## FAQ
 ```
-  ▁▁     ╭─────────────────────────────────────╮
- ▁▁▁│    │ Why am I here?                      │
-┌┘└ ░▌   ╰─────────────────────────────────────╯
+  ▁▁     ╭─────────────────╮
+ ▁▁▁│    │ Why am I here?  │
+┌┘└ ░▌   ╰─────────────────╯
 ╚═══╝     F: Just for fun i guess
 ```
 

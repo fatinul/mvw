@@ -180,7 +180,7 @@ class DatabaseManager:
     def delete_movie_entry_by_id(self, imdbid: str):
         """Delete the movie entry using its title"""
         query = """
-            DELETE FROM movies WHERE title = ?
+            DELETE FROM movies WHERE imdbid = ?
         """
         try:
             cursor = self.conn.cursor()

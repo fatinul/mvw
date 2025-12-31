@@ -142,6 +142,7 @@ def edit(
 
         database_manager.update_star_review(movie['imdbid'], star, review) 
         moai.says(f"[green]✓ Your Star & Review got [italic]updated[/italic] successfully[/]")
+        return star, review
     else:
         display_manager = DisplayManager(movie, poster_path)
         display_manager.display_movie_info()
@@ -181,6 +182,7 @@ def edit(
             review = click.prompt("MVW 󰭹 ", prompt_suffix=">")
 
         database_manager.store_movie_metadata(movie, poster_path, star, review) 
+        return star, review
 
 @app.command(hidden=True)
 def save(movie, poster_local_path):
@@ -214,7 +216,7 @@ def interactive(title: str):
             movie = movie_already_reviewed
             already_reviewed = True
 
-        edit(movie, poster_path, already_reviewed)
+        star_review = edit(movie, poster_path, already_reviewed)
 
         moai.says("Do you want to have an [cyan]\"image\"[/] of your review?\nTo change theme, try [yellow]`mvw config -t <THEME>`[/]")
         screenshot = click.confirm(
@@ -226,6 +228,8 @@ def interactive(title: str):
 
         if screenshot:
             save(movie, poster_path)
+        else:
+            DisplayManager(movie, poster_path).display_movie_info(star_review[0], star_review[1])
     else:
         moai.says("Hi, [bold]API key[/] [indian_red]did not found[/], try [italic yellow]`mvw config --help`[/]\n"
                     "While doing that, you can apply Free API key here:\n"
