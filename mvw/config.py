@@ -5,21 +5,17 @@ from rich.table import Table
 from rich.box import ROUNDED
 
 from .moai import Moai
-
-CONFIG_DIR = Path.home() / ".config" / "mvp"
-CACHE_DIR = Path.home() / ".cache" / "mvp"
-
-USER_FILE = CONFIG_DIR / "user.conf"
-POSTERS_DIR = CACHE_DIR / "posters"
+from .path import PathManager
 
 console = Console()
 moai = Moai()
+path = PathManager()
 
 class ConfigManager:
     def __init__(self) -> None:
         self.config = configparser.ConfigParser()
         self.base_dir = Path(__file__).parent.parent
-        self.user_file = USER_FILE
+        self.user_file = path.user_conf_path
         self.load_configs()
         self.save_user_config()
 
@@ -38,8 +34,11 @@ class ConfigManager:
         self.config['USER'] = {'name': ''}
         self.config['UI'] = {
             'moai': 'true',
-            'poster_width': '30',
+            'poster_width': '25',
+            'theme': 'tokyonight',
+            'review': 'true',
         }
+        self.config['DATA'] = {'worldwide_boxoffice': 'false'}
 
     def save_user_config(self):
         """Saves only the current state to the user's config file"""
@@ -53,12 +52,15 @@ class ConfigManager:
 
     def reset_to_default_config(self):
         """Reset any changes made in user.conf"""
-        preserved_data = self.get_config("API", "omdb_api_key")
+        preserved_data_omdb_api_key = self.get_config("API", "omdb_api_key")
+        preserved_data_user_name = self.get_config("USER", "name")
 
         self.config.clear()
+        self.user_file.unlink()
         self.load_configs()
 
-        self.set_config("API", "omdb_api_key", preserved_data)
+        self.set_config("API", "omdb_api_key", preserved_data_omdb_api_key)
+        self.set_config("USER", "name", preserved_data_user_name)
         self.save_user_config()
         moai.says(f"[green]✓ Config [italic]defaulted[/italic] successfully[/]")
 
@@ -73,7 +75,6 @@ class ConfigManager:
         self.save_user_config()
 
     def show_config(self):
-        # TODO: Make a table and partition
         """Show the configuration info"""
         table = Table(title="[light_steel_blue3]Configuration Settings[/]", box=ROUNDED)
         table.add_column("Section", style="cyan", width=12)
@@ -91,6 +92,7 @@ class ConfigManager:
         console.print(" ")
         console.print(table)
         console.print(" Try [italic yellow]`config --help`[/] to edit the settings")
+        console.print("[dim]NOTE: [italic]worldwide_boxoffice[/] will only work for the [italic bold]next added[/] movie[/]")
 
 if __name__ == "__main__":
     ConfigManager().show_config()

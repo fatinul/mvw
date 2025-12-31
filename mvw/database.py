@@ -2,16 +2,15 @@ import sqlite3
 from pathlib import Path
 import atexit
 
+from mvw.config import ConfigManager
+
 from .movie import MovieManager
 from .moai import Moai
-
-DB_DIR = Path.home() / ".config" / "mvp"
-# DB_PATH = DB_DIR / "metadata.db"
-# TODO: uncomment this
-DB_PATH = DB_DIR / "test-metadata.db"
+from .path import PathManager
 
 movie_manager = MovieManager()
 moai = Moai()
+path = PathManager()
 
 INIT_TABLE = '''
         CREATE TABLE IF NOT EXISTS movies (
@@ -46,9 +45,7 @@ INIT_TABLE = '''
 
 class DatabaseManager:
     def __init__(self) -> None:
-        # Ensure directory exists
-        DB_DIR.mkdir(parents=True, exist_ok=True)
-        self.conn = sqlite3.connect(DB_PATH, check_same_thread=False)
+        self.conn = sqlite3.connect(path.db_path, check_same_thread=False)
         self.conn.row_factory = sqlite3.Row
         self.initialize_db()
         atexit.register(self.close_db)
@@ -96,16 +93,20 @@ class DatabaseManager:
                     poster_local_path=excluded.poster_local_path,
                     star=excluded.star,
                     review=excluded.review
-            ''', (
-                movie['title'], movie['year'], movie['rated'], movie['released'], 
-                movie['runtime'], movie['genre'], movie['director'], movie['writer'], 
-                movie['actors'], movie['plot'], movie['language'], movie['country'], 
-                movie['awards'], movie['poster'], movie['metascore'], movie['imdbrating'], 
-                movie['imdbvotes'], movie['imdbid'], movie['type'], movie['dvd'], 
-                movie['boxoffice'], movie['production'], movie['website'], 
-                poster_local_path, star, review
-            ))
+            ''',(
+                    movie['title'], movie['year'], movie['rated'], movie['released'], 
+                    movie['runtime'], movie['genre'], movie['director'], movie['writer'], 
+                    movie['actors'], movie['plot'], movie['language'], movie['country'], 
+                    movie['awards'], movie['poster'], movie['metascore'], movie['imdbrating'], 
+                    movie['imdbvotes'], movie['imdbid'], movie['type'], movie['dvd'], 
+                    movie['boxoffice'], movie['production'], movie['website'], poster_local_path, star, review
+                )
+            )
             self.conn.commit()
+
+            if ConfigManager().get_config("DATA", "worldwide_boxoffice").lower() == "true":
+                self.set_movie_boxoffice_to_worldwide(movie['imdbid'])
+
             moai.says(f"[green]✓ {movie['title']} [italic]saved[/italic] successfully[/]")
         except Exception as e:
             self.conn.rollback()
@@ -144,6 +145,75 @@ class DatabaseManager:
         row = cursor.fetchone()
 
         return row
+
+    def get_movie_metadata_by_imdbid(self, imdbid: str):
+        """Fetch a movie and all its genres in single query"""
+        query = """
+            SELECT * FROM movies WHERE imdbid=?
+        """
+        cursor = self.conn.cursor()
+        cursor.execute(query, (imdbid,))
+        row = cursor.fetchone()
+
+        return row
+
+    def delete_movie_entry_by_title(self, title: str):
+        """Delete the movie entry using its title"""
+        query = """
+            DELETE FROM movies WHERE title = ?
+        """
+        try:
+            cursor = self.conn.cursor()
+            cursor.execute(query, (title,))
+
+            # IMPORTANT: You must commit to save the deletion
+            self.conn.commit()
+
+            # Check if anything was actually deleted
+            if cursor.rowcount > 0:
+                moai.says(f"[green]✓ Movie ({title}) [italic]deleted[/italic] successfully[/]")
+            else:
+                moai.says(f"[indian_red]x Sorry, Movie not found[/]")
+        except Exception as e:
+            moai.says(f"[indian_red]x Sorry, Database error: ({e}) occured[/]")
+            self.conn.rollback()
+
+    def delete_movie_entry_by_id(self, imdbid: str):
+        """Delete the movie entry using its title"""
+        query = """
+            DELETE FROM movies WHERE title = ?
+        """
+        try:
+            cursor = self.conn.cursor()
+            cursor.execute(query, (imdbid,))
+
+            # IMPORTANT: You must commit to save the deletion
+            self.conn.commit()
+
+            # Check if anything was actually deleted
+            if cursor.rowcount > 0:
+                moai.says(f"[green]✓ Movie with IMDB_ID ({imdbid}) [italic]deleted[/italic] successfully[/]")
+            else:
+                moai.says(f"[indian_red]x Sorry, Movie not found[/]")
+        except Exception as e:
+            moai.says(f"[indian_red]x Sorry, Database error: ({e}) occured[/]")
+            self.conn.rollback()
+
+    def set_movie_boxoffice_to_worldwide(self, imdbid: str):
+        """Save the worldwide box office"""
+        worldwide_value = movie_manager.fetch_box_office_worldwide(imdbid)
+        if not worldwide_value:
+            moai.says(f"[indian_red]x Sorry, There is no worldwide boxoffice for this entry")
+            return
+        query = """
+            UPDATE movies SET boxoffice = ? WHERE imdbid = ?
+        """
+        try:
+            cursor = self.conn.cursor()
+            cursor.execute(query, (worldwide_value, imdbid,))
+            self.conn.commit()
+        except Exception as e:
+            moai.says(f"[indian_red]x Sorry, Database error: ({e}) occured[/]\n[dim]This should not happen, up an issue to the dev[/]")
 
     def close_db(self):
         """Call this when the cli shuts down"""

@@ -1,13 +1,46 @@
 [project]
-name = "mvtinul"
+name = "mvw"
 version = "0.1.0"
-description = "Add your description here"
+description = "CLI commands to catalogue all your movie reviews"
 readme = "README.md"
+authors = [
+    { name = "Fatinul", email = "fatinulhaziq22@gmail.com" }
+]
+maintainers = [
+    { name = "Fatinul", email = "fatinulhaziq22@gmail.com" }
+]
+license = { text = "MIT" }
 requires-python = ">=3.12"
+keywords = ["movie", "reviews", "cli", "catalogue", "omdb", "terminal", "cinema"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: End Users/Desktop",
+    "Topic :: Terminals",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.12",
+    "Environment :: Console",
+]
 dependencies = [
+    "bs4>=0.0.2",
     "iterfzf>=1.8.0.62.0",
     "omdbapi>=0.7.0",
+    "platformdirs>=4.5.1",
     "rich>=14.2.0",
     "rich-pixels>=3.0.1",
     "typer>=0.21.0",
 ]
+
+[project.urls]
+Homepage = "https://github.com/fatinul/mvw"
+Repository = "https://github.com/fatinul/mvw"
+Changelog = "https://github.com/fatinul/mvw/releases"
+
+[project.scripts]
+mvw = "mvw.main:app"
+
+[tool.uv]
+package = true
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
