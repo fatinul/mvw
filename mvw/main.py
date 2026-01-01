@@ -247,7 +247,9 @@ def list():
 
     selected_title = iterfzf(
         movie_map.keys(),
-        preview="mvw preview -t {}"
+        preview="mvw preview -t {}",
+        ansi=True,
+        multi=False
     )
 
     if selected_title:
