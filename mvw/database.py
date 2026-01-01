@@ -211,6 +211,7 @@ class DatabaseManager:
             cursor = self.conn.cursor()
             cursor.execute(query, (worldwide_value, imdbid,))
             self.conn.commit()
+            moai.says(f"[green]✓ Worldwide Boxoffice ({worldwide_value}) [italic]fetched[/italic] successfully[/]")
         except Exception as e:
             moai.says(f"[indian_red]x Sorry, Database error: ({e}) occured[/]\n[dim]This should not happen, up an issue to the dev[/]")
 
