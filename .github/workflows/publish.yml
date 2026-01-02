@@ -8,52 +8,72 @@ on:
     branches: [main]
 
 jobs:
-  # JOB 1: Check (Runs on every push and PR)
   check:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - name: Install uv
         uses: astral-sh/setup-uv@v5
-
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version-file: "pyproject.toml"
-
       - name: Lint and Format Check
-        # This checks if your code follows style guides
+        run: uv lock --check
+
+  # Build Windows Binary
+  build-windows:
+    needs: check
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Build EXE
+        # --onefile: Bundles everything into a single .exe
+        # --name mvw: Names the output file mvw.exe
+        # mvw/main.py: Your specific entry point
         run: |
-          uv lock --check
-          # If you use ruff: uvx ruff check .
+          uv sync
+          uv run pip install pyinstaller
+          uv run pyinstaller --onefile --console --name mvw mvw/main.py
 
-      # - name: Run Tests
-      # This will run your tests if you have a tests/ folder
-      # If you don't have tests yet, you can comment this out
-      # run: uv run pytest
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mvw-windows
+          path: dist/mvw.exe
 
-  # JOB 2: Publish (Only runs when you push a tag like v0.1.1)
+  # Uploca to PyPI
   publish:
-    needs: check # This ensures Job 1 passed
+    needs: [check, build-windows] # Wait for both to finish
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
       - uses: actions/checkout@v4
+      - name: Download Windows Binary
+        uses: actions/download-artifact@v4
+        with:
+          name: mvw-windows
+          path: dist-windows
       - name: Install uv
         uses: astral-sh/setup-uv@v5
-
-      - name: Build
+      - name: Build PyPI Source
         run: uv build
-
       - name: Upload to PyPI
         env:
           UV_PUBLISH_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
         run: uv publish
-
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: dist/*
+          # This will upload the .tar.gz, .whl, AND the .exe
+          files: |
+            dist/*
+            dist-windows/mvw.exe
           generate_release_notes: true

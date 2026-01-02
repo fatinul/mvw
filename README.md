@@ -36,7 +36,7 @@
 ### Interactive
 Default usage where you will get to experience the full experience of MVW. You will get to search, rate, review and also save your review. Every reviews will be saved in your local machine!
 
-![Interactive Command](https://raw.githubusercontent.com/fatinul/mvw/v0.1.0/demos/demo-interactive.gif)
+![Interactive Command](https://raw.githubusercontent.com/fatinul/mvw/v1.1.0/demos/demo-interactive.gif)
 
 ### List
 You will get to see every past reviews that you had done in a simple interface supported by [iterfzf](https://github.com/dahlia/iterfzf)) which uses the "__Fuzzy Search__"
@@ -108,10 +108,12 @@ And _also_, I just want to learn new things :)
 | pipx *(recommended)* | `pipx install mvw` |
 | uv | `uv tool install mvw` |
 | pip | `pip install mvw` |
+| winget | `winget install --silent --source "https://github.com/fatinul/mvw/releases/latest/download/mvw.exe"` |
 
 
 > NOTE: This CLI require a nerdfont to have the icon fully showed
 > --> This [repo](https://github.com/officialrajdeepsingh/nerd-fonts-installer) seems legit way to install [nerdfont](https://www.nerdfonts.com/) but its up to you how to install, google it, you got this!
+> --> Also, If you are on Windows, don't forget to set nerdfont as default font in the settings.
 
 ## Usage
 

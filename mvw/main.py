@@ -9,6 +9,7 @@ from .display import DisplayManager
 from .movie import MovieManager
 from .database import DatabaseManager
 from .moai import Moai
+from .utils import is_nerd_font_installed
 
 app = typer.Typer(help="MVW - CLI MoVie revieW", context_settings={"help_option_names" : ["-h", "--help"]})
 
@@ -191,12 +192,16 @@ def save(movie, poster_local_path):
 
 @app.command()
 def interactive(title: str):
-    """Search the movie title with OMDb API, star, edit, and save"""
+    """(DEFAULT) Search the movie title, star, edit, and save"""
     if config_manager.get_config("API", "omdb_api_key"):
         moai.says(
             "[bold cyan]TIPS:[/bold cyan] The title should be the [bold italic indian_red]exact[/]: [yellow]'&'[/] [sky_blue2]vs[/] [yellow]'and'[/], ...\n"
             "Also, To exit at [italic]any[/] point, simply [yellow]`CTRL+c`[/]"
         )
+        
+        if not is_nerd_font_installed():
+            moai.says("Also, I [italic]guess[/] that you don't have [yellow]nerdfont[/] installed. Some [italic]icons[/] may not be rendered.")
+
         if not title:
             title = click.prompt("MVW  ", prompt_suffix=">")
 
