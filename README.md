@@ -108,7 +108,6 @@ And _also_, I just want to learn new things :)
 | pipx *(recommended)* | `pipx install mvw` |
 | uv | `uv tool install mvw` |
 | pip | `pip install mvw` |
-| winget | `winget install --silent --source "https://github.com/fatinul/mvw/releases/latest/download/mvw.exe"` |
 
 
 > NOTE: This CLI require a nerdfont to have the icon fully showed
