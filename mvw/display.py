@@ -117,8 +117,12 @@ class DisplayManager:
             )
 
             console.print(full_panel)
+        except KeyError:
+            # TODO: Quick patch for KeyError: 'boxoffice' not found. Remove this when search feature came
+            moai.says(f"[indian_red]x Sorry, TV Shows are currently not supported[/]")
+            os.abort()
         except Exception:
-           print(f"The terminal preview is not supported")
+            print(f"The terminal preview is not supported")
 
     def save_display_movie_info(self):
         """Save a screenshot of the user's review"""
