@@ -142,7 +142,7 @@ class DisplayManager:
                 encoding='utf-8',
             )
 
-            console = Console(record=True, width=100)
+            console = Console(force_terminal=True, soft_wrap=True, color_system="truecolor", legacy_windows=False, record=True, width=100)
             decoder = AnsiDecoder()
             lines = list(decoder.decode(result.stdout))
 

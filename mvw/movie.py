@@ -67,33 +67,38 @@ class MovieManager:
         """Fetch movie poster and store in posters in data"""
         poster_link = self.movie['poster'] # pyright: ignore
 
-        # check if poster not exist
-        if poster_link == "N/A":
-            moai.says("Sorry, but we couldn't found the [italic]poster[/], so I will replace it with [dim yellow]'nothing'[/]")
-            poster_link = "https://m.media-amazon.com/images/M/MV5BY2Q5NGEyYTItMTc1Mi00ZjE5LTkyMmYtNWQzOTdiZDEwNjk1XkEyXkFqcGc@._V1_SX300.jpg"
+        default_poster = "https://m.media-amazon.com/images/M/MV5BY2Q5NGEyYTItMTc1Mi00ZjE5LTkyMmYtNWQzOTdiZDEwNjk1XkEyXkFqcGc@._V1_SX300.jpg"
+        attempts = 0
 
-        filename = poster_link.split("/")[-1].split("@")[0] + ".jpg"
-        file_path = path.poster_dir / filename
+        while attempts < 2:
+            # 1. Determine filename based on current link
+            filename = poster_link.split("/")[-1].split("@")[0] + ".jpg"
+            file_path = path.poster_dir / filename
 
-        # check if the poster already exist
-        if file_path.exists():
-            moai.says(f"[yellow]Poster file already exist -> ([italic]No need to fetch a new one![/])[/]")
-            return file_path
-        else:
+            # 2. Check if exists
+            if file_path.exists():
+                moai.says(f"[yellow]Poster file already exists -> ([italic]No need to fetch![/])[/]")
+                return file_path
+
             try:
                 response = requests.get(poster_link, stream=True, timeout=10)
-                response.raise_for_status() # Check for 404/500 errors
+                response.raise_for_status() 
 
                 with open(file_path, 'wb') as f:
                     for chunk in response.iter_content(chunk_size=8192):
                         f.write(chunk)
 
-                moai.says(f"[green]✓ Poster ({file_path}) [italic]saved[/italic] successfully[/]")
+                moai.says(f"[green]✓ Poster saved successfully[/]")
                 return file_path
 
             except Exception as e:
-                moai.says(f"[indian_red]x Sorry, Poster Error ({e}) occured.[/]")
-                return
+                attempts += 1
+                if attempts == 1:
+                    moai.says(f"[orange1]Poster link are broken, switching to default poster...[/]")
+                    poster_link = default_poster
+                else:
+                    moai.says(f"[indian_red]x Failed to fetch even the default poster: {e}[/]")
+                    return None
 
 if __name__ == "__main__":
     print(MovieManager().fetch_box_office_worldwide("tt1877830"))
