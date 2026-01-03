@@ -205,12 +205,11 @@ def interactive(title: str):
 
         movie: dict = movie_manager.fetch_movie_metadata(title=title)
         poster_path = movie_manager.fetch_poster()
-        poster_path = str(poster_path.resolve())
+        if poster_path == None:
+            poster_path = "N/A"
+        else:
+            poster_path = str(poster_path.resolve())
 
-        # from mvw.test import TestData
-        # test_data = TestData()
-        # movie = test_data.test_movie
-        # poster_path = test_data.test_poster
 
         movie_already_reviewed = database_manager.get_movie_metadata_by_title(movie['title'])
         already_reviewed = False

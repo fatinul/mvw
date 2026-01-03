@@ -1,5 +1,6 @@
 import re
 from typing import Dict
+from pathlib import Path
 from rich.table import Table
 from rich.text import Text
 from rich.console import Console, Group
@@ -237,17 +238,35 @@ class DisplayManager:
     def poster_panel(self) -> Panel:
         poster_height = int(1.2 * self.poster_width)
 
-        pixels = Pixels.from_image_path(
-            path=self.poster_path,
-            resize=[self.poster_width, poster_height] # pyright: ignore
-        )
+        panel_kwargs = {
+            "width": self.poster_width + 4,
+            "height": int((poster_height + 5) / 2),
+            "subtitle": str(self.movie['title']),
+            "expand": True,
+            "style": str(palette.style.get('poster_border', ''))
+        }
 
-        return Panel(
-            pixels,
-            width=self.poster_width+4,
-            height=int((poster_height+5)/2),
-            subtitle=str(self.movie['title']),
-            expand=True,
-            style=str(palette.style.get('poster_border', ''))
-        )
+        def placeholder_panel() -> Panel:
+            placeholder_text = Align.center(
+                Text("No Poster", style=str(palette.style.get('text', 'white'))),
+                vertical="middle"
+            )
+            return Panel(placeholder_text, **panel_kwargs)
 
+        poster_path = str(self.poster_path or "").strip()
+        if not poster_path or poster_path == "N/A":
+            return placeholder_panel()
+
+        poster_file = Path(poster_path)
+        if not poster_file.is_file():
+            return placeholder_panel()
+
+        try:
+            pixels = Pixels.from_image_path(
+                path=poster_file,
+                resize=[self.poster_width, poster_height]  # pyright: ignore
+            )
+        except Exception:
+            return placeholder_panel()
+
+        return Panel(pixels, **panel_kwargs)
