@@ -1,6 +1,6 @@
 from os import abort
 import requests
-from omdbapi.movie_search import GetMovie, GetMovieException
+from .api import API
 from rich.console import Console
 
 from .path import PathManager
@@ -16,25 +16,36 @@ class MovieManager:
     """Manage any resources and data regarding movies"""
     def __init__(self) -> None:
         self.api_key = config_manager.get_config("API", "omdb_api_key")
-        self.omdb = GetMovie(api_key=self.api_key)
+        self.api = API(self.api_key)
 
     def test_api_key(self, api_key: str) -> bool:
         """Test the validity of the API key"""
         try:
-            # Create a new movie instance for testing
-            GetMovie(api_key=api_key).get_movie(title='Interstellar')
+            # Create a new API_KEY so not use the self key
+            api = API(api_key)
+            api.fetch_movie_metadata("tt3896198")
             return True
-        except GetMovieException:
+        except Exception:
             return False
 
-    def fetch_movie_metadata(self, title: str) -> dict:
+    def fetch_movie_metadata(self, imdbid: str) -> dict:
         """Fetch movie metadata using OMDB Api Endpoint"""
         try:
-            self.movie = self.omdb.get_movie(title=title)
-            # print(self.movie.items())
+            self.movie = self.api.fetch_movie_metadata(imdbid=imdbid)
             return self.movie
-        except GetMovieException as e:
+        except Exception as e:
             moai.says(f"[indian_red]x Sorry, Fetching movie error ({e}) occured.[/]")
+
+            if e == "Movie not found!":
+                console.print("You can check the title at [underline sky_blue2]https://www.omdb.org/en/us/search[/]")
+            abort()
+
+    def search_movie(self, title: str):
+        """Search movies that have a close name"""
+        try:
+            return self.api.search_movie(title=title)
+        except Exception as e:
+            moai.says(f"[indian_red]x Sorry, Searching movie error ({e}) occured.[/]")
 
             if e == "Movie not found!":
                 console.print("You can check the title at [underline sky_blue2]https://www.omdb.org/en/us/search[/]")
@@ -67,38 +78,28 @@ class MovieManager:
         """Fetch movie poster and store in posters in data"""
         poster_link = self.movie['poster'] # pyright: ignore
 
-        default_poster = "https://m.media-amazon.com/images/M/MV5BY2Q5NGEyYTItMTc1Mi00ZjE5LTkyMmYtNWQzOTdiZDEwNjk1XkEyXkFqcGc@._V1_SX300.jpg"
-        attempts = 0
+        # 1. Determine filename based on current link
+        filename = poster_link.split("/")[-1].split("@")[0] + ".jpg"
+        file_path = path.poster_dir / filename
 
-        while attempts < 2:
-            # 1. Determine filename based on current link
-            filename = poster_link.split("/")[-1].split("@")[0] + ".jpg"
-            file_path = path.poster_dir / filename
+        # 2. Check if exists
+        if file_path.exists():
+            moai.says(f"[yellow]Poster file already exists -> ([italic]No need to fetch![/])[/]")
+            return file_path
 
-            # 2. Check if exists
-            if file_path.exists():
-                moai.says(f"[yellow]Poster file already exists -> ([italic]No need to fetch![/])[/]")
-                return file_path
+        try:
+            response = requests.get(poster_link, stream=True, timeout=10)
+            response.raise_for_status() 
 
-            try:
-                response = requests.get(poster_link, stream=True, timeout=10)
-                response.raise_for_status() 
+            with open(file_path, 'wb') as f:
+                for chunk in response.iter_content(chunk_size=8192):
+                    f.write(chunk)
 
-                with open(file_path, 'wb') as f:
-                    for chunk in response.iter_content(chunk_size=8192):
-                        f.write(chunk)
+            moai.says(f"[green]✓ Poster saved successfully[/]")
+            return file_path
 
-                moai.says(f"[green]✓ Poster saved successfully[/]")
-                return file_path
-
-            except Exception as e:
-                attempts += 1
-                if attempts == 1:
-                    moai.says(f"[orange1]Poster link are broken, switching to default poster...[/]")
-                    poster_link = default_poster
-                else:
-                    moai.says(f"[indian_red]x Failed to fetch even the default poster: {e}[/]")
-                    return None
+        except Exception as e:
+            moai.says(f"[orange1]Poster link are broken, switching to default poster...[/]")
 
 if __name__ == "__main__":
     print(MovieManager().fetch_box_office_worldwide("tt1877830"))

@@ -20,6 +20,14 @@ MOAI = '''  ▁▁
 
 NO_MOAI = ''''''
 
+TITLE = '''
+   __  ______  __      ___     __
+  /  |/  /| | / /      | | /| / /
+ / /|_/ / | |/ /       | |/ |/ / 
+/_/  /_/o |___/ie revie|__/|__/ 
+         -- ...- .--
+'''
+
 class Moai:
     def __init__(self) -> None:
         self.moai = MOAI
@@ -46,3 +54,15 @@ class Moai:
             moai_says_table.add_row(word_panel)
 
         console.print(moai_says_table)
+
+    def title(self):
+        # console.print(f"[light_steel_blue3 bold]{TITLE}[/]")
+        moai_lines = BIG_MOAI.splitlines()
+        title_lines = TITLE.splitlines()
+
+        max_height = max(len(moai_lines), len(title_lines))
+
+        for i in range(max_height):
+            left = moai_lines[i] if i < len(moai_lines) else ""
+            right = title_lines[i] if i < len(title_lines) else ""
+            console.print(f"         [light_steel_blue3]{left.ljust(9)}{right}[/]")

@@ -1,0 +1,78 @@
+import requests
+from .moai import Moai
+
+moai = Moai()
+
+class API:
+    def __init__(self, api_key: str) -> None:
+        self.api_key: str = api_key
+        self.search_movies: dict = {}
+        self.selected_movie: dict = {}
+        self.omdb_url = 'http://www.omdbapi.com/'
+
+    def fetch_movie_metadata(self, imdbid:str, plot=None):
+        """Get all the data movie"""
+        parameters = {
+            'i': imdbid,
+            'plot': plot,
+            'r': 'json',
+            'apikey': self.api_key
+        }
+        result = requests.get(self.omdb_url, params=parameters).json()
+
+        if result.pop('Response') == 'False':
+            moai.says(f"[indian_red]x Sorry, API error: ({result['Error']}) occured[/]\n[dim]This should not happen, up an issue to the dev[/]")
+            return self.selected_movie
+
+        for key, value in result.items():
+            key = key.lower()
+            setattr(self, key, value)
+            self.selected_movie[key] = value
+
+        return self.selected_movie
+
+    def search_movie(self, title):
+        """Search and return any movies that may relate to the title"""
+        parameters = {
+            's': title,
+            'type': 'movie',
+            'r': 'json',
+            'apikey': self.api_key
+        }
+        result = requests.get(self.omdb_url, params=parameters).json()
+
+        if result.pop('Response') == 'False':
+            moai.says(f"[indian_red]x Sorry, API error: ({result['Error']}) occured[/]\n[dim]This should not happen, up an issue to the dev[/]")
+            return self.search_movies
+
+        for key, value in result.items():
+            key = key.lower()
+            setattr(self, key, value)
+            self.search_movies[key] = value
+
+        return self.search_movies
+
+if __name__ == "__main__":
+    from .config import ConfigManager
+    api_key = str(ConfigManager().get_config("API", "omdb_api_key"))
+    api = API(api_key)
+
+    from iterfzf import iterfzf
+
+    results = api.search_movie("naruto")
+    movies = results.get('search', [])
+
+    movie_map = {f"{m['Title']} ({m['Year']})": m['imdbID'] for m in movies}
+
+    choice = iterfzf(
+        list(movie_map.keys())
+    )
+
+    if choice:
+        selected_id = movie_map[choice] # pyright: ignore
+        print(f"ID: {selected_id}")
+
+        print(api.fetch_movie_metadata(selected_id))
+    else:
+        print("No movie selected.")
+

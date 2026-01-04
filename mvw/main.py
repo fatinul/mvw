@@ -9,6 +9,7 @@ from .display import DisplayManager
 from .movie import MovieManager
 from .database import DatabaseManager
 from .moai import Moai
+from .api import API
 
 app = typer.Typer(help="MVW - CLI MoVie revieW", context_settings={"help_option_names" : ["-h", "--help"]})
 
@@ -193,23 +194,33 @@ def save(movie, poster_local_path):
 def interactive(title: str):
     """(DEFAULT) Search the movie title, star, edit, and save"""
     if config_manager.get_config("API", "omdb_api_key"):
-        moai.says(
-            "[bold cyan]TIPS:[/bold cyan] The title should be the [bold italic indian_red]exact[/]: [yellow]'&'[/] [sky_blue2]vs[/] [yellow]'and'[/], ...\n"
-            "Also, To exit at [italic]any[/] point, simply [yellow]`CTRL+c`[/]"
-        )
-        
+        moai.title()
         moai.says("[yellow] [/]: If you do not see a [italic yellow]smile[/] icon, [cyan]nerdfont[/] is not installed. ", moai="no")
 
         if not title:
             title = click.prompt("MVW  ", prompt_suffix=">")
 
-        movie: dict = movie_manager.fetch_movie_metadata(title=title)
+        search_response = movie_manager.search_movie(title)
+        search_movies_list = search_response.get('search', [])
+
+        search_movie_map = {f"{m['Title']} ({m['Year']})": m['imdbID'] for m in search_movies_list}
+
+        choice = iterfzf(
+            search_movie_map.keys()
+        )
+
+        if choice:
+            selected_id = search_movie_map[choice] # pyright: ignore
+        else:
+            moai.says("It seems like you did not choose any movie")
+
+        movie: dict = movie_manager.fetch_movie_metadata(imdbid=selected_id)
         poster_path = movie_manager.fetch_poster()
+
         if poster_path == None:
             poster_path = "N/A"
         else:
             poster_path = str(poster_path.resolve())
-
 
         movie_already_reviewed = database_manager.get_movie_metadata_by_title(movie['title'])
         already_reviewed = False

@@ -9,22 +9,22 @@ authors = [
 maintainers = [
     { name = "Fatinul", email = "fatinulhaziq22@gmail.com" }
 ]
-license = { text = "MIT" }
+license = { text = "GPL-3.0-or-later" }
 requires-python = ">=3.12"
 keywords = ["movie", "reviews", "cli", "catalogue", "omdb", "terminal", "cinema"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: End Users/Desktop",
     "Topic :: Terminals",
-    "License :: OSI Approved :: MIT License",
+    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
     "Programming Language :: Python :: 3.12",
     "Environment :: Console",
 ]
 dependencies = [
     "bs4>=0.0.2",
     "iterfzf>=1.8.0.62.0",
-    "omdbapi>=0.7.0",
     "platformdirs>=4.5.1",
+    "requests>=2.32.5",
     "rich>=14.2.0",
     "rich-pixels>=3.0.1",
     "typer>=0.21.0",
