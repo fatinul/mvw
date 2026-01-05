@@ -297,7 +297,7 @@ class DisplayManager:
             placeholder_text = Align.center(
                 Text("No Poster", style=str(palette.style.get('text', 'white'))),
                 vertical="middle",
-                height=15
+                height=16
             )
             return Panel(placeholder_text, **panel_kwargs)
 
