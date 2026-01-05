@@ -45,7 +45,7 @@ class TerminalImageRenderer:
             img = enhancer.enhance(1.2)
 
             target_width = self.width * 2
-            effective_img_aspect = img.width / img.height * 2.0
+            effective_img_aspect = img.width / img.height * 2.3
             new_width = target_width
             new_height = int(target_width / effective_img_aspect)
 
@@ -158,7 +158,7 @@ class DisplayManager:
 
             review_group = Group(gap, review_header, review)
 
-            spacing = Group(Text(" "), Text(" "))
+            spacing = Text(" ")
 
             if config_manager.get_config("UI", "review") == "true":
                 right_group = Group(spacing, self.movie_group(), self.imdb_group(), self.stats_group(), review_group)
@@ -169,7 +169,7 @@ class DisplayManager:
                 main_layout = Group(Align.center(poster_panel), Text(" "), right_group)
             else:
                 body_table = Table.grid(padding=(0, 2))
-                body_table.add_column(width=self.poster_width)
+                body_table.add_column(width=self.poster_width + 2)
                 body_table.add_column()
                 body_table.add_row(poster_panel, right_group)
 
@@ -296,7 +296,8 @@ class DisplayManager:
         def placeholder_panel() -> Panel:
             placeholder_text = Align.center(
                 Text("No Poster", style=str(palette.style.get('text', 'white'))),
-                vertical="middle"
+                vertical="middle",
+                height=15
             )
             return Panel(placeholder_text, **panel_kwargs)
 
