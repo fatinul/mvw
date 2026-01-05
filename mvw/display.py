@@ -4,7 +4,6 @@ from pathlib import Path
 from rich.table import Table
 from rich.text import Text
 from rich.console import Console, Group
-from rich_pixels import Pixels
 from rich.panel import Panel
 from rich.align import Align
 from rich.ansi import AnsiDecoder
@@ -18,17 +17,108 @@ from .theme import Palette
 import os
 import sys
 
+#Tui poster generating 
+from PIL import Image, ImageEnhance
+import numpy as np
+
+class TerminalImageRenderer:
+    def __init__(self, image_path: Path, width: int):
+        self.image_path = image_path
+        self.width = width
+        self.failed = False
+
+    def __rich_console__(self, console, options):
+        try:
+            if not self.image_path.exists():
+                self.failed = True
+                return
+                
+            img = Image.open(self.image_path).convert("RGB")
+            
+            if img.width == 0 or img.height == 0:
+                self.failed = True
+                return
+            
+            enhancer = ImageEnhance.Sharpness(img)
+            img = enhancer.enhance(2.0)
+            enhancer = ImageEnhance.Contrast(img)
+            img = enhancer.enhance(1.2)
+
+            target_width = self.width * 2
+            effective_img_aspect = img.width / img.height * 2.0
+            new_width = target_width
+            new_height = int(target_width / effective_img_aspect)
+
+            if new_width % 2 != 0: new_width -= 1
+            if new_height % 2 != 0: new_height -= 1
+            
+            if new_width <= 0 or new_height <= 0:
+                self.failed = True
+                return
+
+            img = img.resize((new_width, new_height), Image.Resampling.LANCZOS)
+            arr = np.array(img, dtype=np.float32)
+
+            quadrants = [' ', '▘', '▝', '▀', '▖', '▌', '▞', '▛', '▗', '▚', '▐', '▜', '▄', '▙', '▟', '█']
+            output_lines = []
+
+            for y in range(0, new_height, 2):
+                line_parts = []
+                for x in range(0, new_width, 2):
+                    block = arr[y:y+2, x:x+2]
+                    pixels = block.reshape(-1, 3)
+                    
+                    avg = np.mean(pixels, axis=0)
+                    dists = np.sum((pixels - avg)**2, axis=1)
+                    c1 = pixels[np.argmax(dists)]
+                    c2 = avg
+                    
+                    for _ in range(2):
+                        d1 = np.sum((pixels - c1)**2, axis=1)
+                        d2 = np.sum((pixels - c2)**2, axis=1)
+                        mask = d1 > d2
+                        
+                        if np.any(~mask): c1 = np.mean(pixels[~mask], axis=0)
+                        if np.any(mask): c2 = np.mean(pixels[mask], axis=0)
+                        
+                    d1 = np.sum((pixels - c1)**2, axis=1)
+                    d2 = np.sum((pixels - c2)**2, axis=1)
+                    mask = d1 > d2
+                    
+                    if np.all(mask):
+                        fg, bg = c2.astype(int), c2.astype(int)
+                        char_idx = 15
+                    elif np.all(~mask):
+                        fg, bg = c1.astype(int), c1.astype(int)
+                        char_idx = 15
+                    else:
+                        fg, bg = c2.astype(int), c1.astype(int)
+                        q_val = 0
+                        if mask[0]: q_val += 1
+                        if mask[1]: q_val += 2
+                        if mask[2]: q_val += 4
+                        if mask[3]: q_val += 8
+                        char_idx = q_val
+
+                    char = quadrants[char_idx]
+                    line_parts.append(f"\033[38;2;{fg[0]};{fg[1]};{fg[2]}m\033[48;2;{bg[0]};{bg[1]};{bg[2]}m{char}")
+                
+                line_parts.append("\033[0m")
+                output_lines.append("".join(line_parts))
+            
+            yield Text.from_ansi("\n".join(output_lines))
+
+        except Exception:
+            self.failed = True
+
+#_____
+
+
 console = Console(force_terminal=True, soft_wrap=True, color_system="truecolor", legacy_windows=False)
 config_manager = ConfigManager()
 path = PathManager()
 moai = Moai()
 palette = Palette(str(config_manager.get_config("UI", "theme")))
-
-# NOTE: DATA that we got from OMDB 
-# dict_keys(['title', 'year', 'rated', 'released', 'runtime', 'genre', 
-# 'director', 'writer', 'actors', 'plot', 'language', 'country', 'awards', 
-# 'poster', 'ratings', 'metascore', 'imdbrating', 'imdbvotes', 'imdbid', 
-# 'type', 'dvd', 'boxoffice', 'production', 'website'])
 
 class DisplayManager:
     def __init__(self, movie, poster_path) -> None:
@@ -53,7 +143,7 @@ class DisplayManager:
             try:
                 sys.stdout.reconfigure(encoding='utf-8')
             except AttributeError:
-                os.system('chcp 65001') # Set windows console to UTF-8
+                os.system('chcp 65001')
         
         reviewer_name = config_manager.get_config("USER", "name")
         suffix = "'s" if reviewer_name else ""
@@ -66,59 +156,31 @@ class DisplayManager:
             review = Text.from_markup(review_text if review_text != None else "Seems like something [italic]happened[/], Sorry for the inconvenience.", overflow="fold", justify="left", style=str(palette.style.get('text', 'white')))
             gap = Text.from_markup(" ")
 
-            review_group = Group(
-                gap,
-                review_header,
-                review
-            )
+            review_group = Group(gap, review_header, review)
+
+            spacing = Group(Text(" "), Text(" "))
 
             if config_manager.get_config("UI", "review") == "true":
-                right_group = Group(
-                    self.movie_group(),
-                    self.imdb_group(),
-                    self.stats_group(),
-                    review_group,
-                )
+                right_group = Group(spacing, self.movie_group(), self.imdb_group(), self.stats_group(), review_group)
             else:
-                right_group = Group(
-                    self.movie_group(),
-                    self.imdb_group(),
-                    self.stats_group(),
-                )
-
+                right_group = Group(spacing, self.movie_group(), self.imdb_group(), self.stats_group())
 
             if current_term_width < 70:
-                main_layout = Group(
-                    Align.center(poster_panel),
-                    Text(" "),
-                    right_group
-                )
+                main_layout = Group(Align.center(poster_panel), Text(" "), right_group)
             else:
                 body_table = Table.grid(padding=(0, 2))
-
-                body_table.add_column(width=self.poster_width) # Space for "Poster"
+                body_table.add_column(width=self.poster_width)
                 body_table.add_column()
                 body_table.add_row(poster_panel, right_group)
 
-                # Combine everything into one main Panel
                 main_group = Table.grid(expand=True)
                 main_group.add_row(body_table)
 
-                main_layout = Panel(
-                    main_group,
-                    box=box.SIMPLE_HEAD,
-                    width=100
-                )
+                main_layout = Panel(main_group, box=box.SIMPLE_HEAD, width=100)
 
-            full_panel = Panel(
-                main_layout,
-                box=box.SIMPLE_HEAD,
-                width=min(100, current_term_width)
-            )
-
+            full_panel = Panel(main_layout, box=box.SIMPLE_HEAD, width=min(100, current_term_width))
             console.print(full_panel)
         except KeyError:
-            # TODO: Quick patch for KeyError: 'boxoffice' not found. Remove this when search feature came
             moai.says(f"[indian_red]x Sorry, TV Shows are currently not supported[/]")
             os.abort()
         except Exception:
@@ -134,14 +196,7 @@ class DisplayManager:
 
         try:
             command = ["mvw", "preview", "-t", self.movie['title']]
-
-            result = subprocess.run(
-                command,
-                capture_output=True,
-                text=True,
-                check=True,
-                encoding='utf-8',
-            )
+            result = subprocess.run(command, capture_output=True, text=True, check=True, encoding='utf-8')
 
             console = Console(force_terminal=True, soft_wrap=True, color_system="truecolor", legacy_windows=False, record=True, width=100)
             decoder = AnsiDecoder()
@@ -150,12 +205,7 @@ class DisplayManager:
             for line in lines:
                 console.print(line)
 
-            console.save_svg(
-                str(svg_path),
-                title=f"MVW (MoVie revieW) 🗿",
-                theme=palette.theme
-            )
-
+            console.save_svg(str(svg_path), title=f"MVW (MoVie revieW) 🗿", theme=palette.theme)
             moai.says(f"[green]✓ {self.movie['title']} ({svg_path}) [italic]saved[/italic] successfully[/]\nNote that it was in [yellow]`svg`[/] so prefered to use [italic]browser[/] to view")
         except Exception as e:
             moai.says(f"[indian_red]x Sorry, Screenshot error ({e}) occured.[/]")
@@ -236,11 +286,8 @@ class DisplayManager:
         }
 
     def poster_panel(self) -> Panel:
-        poster_height = int(1.2 * self.poster_width)
-
         panel_kwargs = {
             "width": self.poster_width + 4,
-            "height": int((poster_height + 5) / 2),
             "subtitle": str(self.movie['title']),
             "expand": True,
             "style": str(palette.style.get('poster_border', ''))
@@ -262,11 +309,12 @@ class DisplayManager:
             return placeholder_panel()
 
         try:
-            pixels = Pixels.from_image_path(
-                path=poster_file,
-                resize=[self.poster_width, poster_height]  # pyright: ignore
-            )
+            renderer = TerminalImageRenderer(poster_file, self.poster_width)
+            test_panel = Panel(renderer, **panel_kwargs)
+            
+            if renderer.failed:
+                return placeholder_panel()
+                
+            return test_panel
         except Exception:
             return placeholder_panel()
-
-        return Panel(pixels, **panel_kwargs)
