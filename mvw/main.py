@@ -10,6 +10,7 @@ from .movie import MovieManager
 from .database import DatabaseManager
 from .moai import Moai
 from .api import API
+from .menu import MenuManager
 
 app = typer.Typer(help="MVW - CLI MoVie revieW", context_settings={"help_option_names" : ["-h", "--help"]})
 
@@ -18,6 +19,7 @@ movie_manager = MovieManager()
 database_manager = DatabaseManager()
 moai = Moai()
 console = Console()
+menu = MenuManager()
 
 @app.command()
 def config(
@@ -266,19 +268,13 @@ def list():
     )
 
     if selected_title:
-        movie = movie_map[selected_title]
-        moai.says("Do you want to have an [cyan]\"image\"[/] of your review?\nTo change theme, try [yellow]`mvw config -t <THEME>`[/]")
-        screenshot = click.confirm(
-            "MVW   (.svg)",
-            default=False,
-            prompt_suffix="?",
-            show_default=True
-        )
+        metadata = movie_map.get(selected_title)
+        imdbid: str = str(metadata.get('imdbid'))
 
-        if screenshot:
-            save(movie,movie['poster_local_path'])
-        else:
-            DisplayManager(movie, movie['poster_local_path']).display_movie_info(movie['star'], movie['review'])
+        menu.add_feature("Preview", preview, imdbid=imdbid)
+        menu.add_feature("Delete", delete, imdbid=imdbid)
+
+        menu.run(imdbid=imdbid)
 
 @app.command()
 def preview(

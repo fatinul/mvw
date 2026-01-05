@@ -14,23 +14,15 @@ class MenuManager:
             "kwargs": kwargs,
         }
 
-    def run(self, prompt: str = "Select an option:"):
+    def run(self, imdbid: str, prompt: str = "Select an option:"):
         """Display menu and execute"""
         options = list(self.features.keys())
         choice = iterfzf(
             options,
-            prompt = f"{prompt} >"
+            prompt = f"{prompt} >",
+            preview=f"mvw preview -i {imdbid}",
         )
 
         if choice and choice in self.features:
             data = self.features[choice]
             data["func"](*data["args"], **data["kwargs"])
-
-if __name__ == "__main__":
-    manager = MenuManager()
-
-    def func1(name:str):
-        print(f"Test, it works, the label = {name}")
-
-    manager.add_feature("Test", func1, name="moai")
-    manager.run()
