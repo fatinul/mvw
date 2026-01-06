@@ -198,6 +198,11 @@ def interactive(title: str):
     if config_manager.get_config("API", "omdb_api_key"):
         moai.title()
         moai.says("[yellow] [/]: If you do not see a [italic yellow]smile[/] icon, [cyan]nerdfont[/] is not installed. ", moai="no")
+        moai.says(
+            "Search Guide:\n"
+            "* [cyan]movie[/]   [dim]# standard[/]\n"
+            "* [cyan]imdbid[/]  [dim]# include 'tt'[/]"
+        )
 
         if not title:
             title = click.prompt("MVW  ", prompt_suffix=">")
