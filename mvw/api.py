@@ -37,7 +37,6 @@ class API:
         """Search and return any movies that may relate to the title"""
         # NOTE:
         # "* [cyan]movie[/]         [dim]# standard[/]\n"
-        # "* [cyan]movie (year)[/]  [dim]# year in int[/]\n"
         # "* [cyan]imdbid[/]        [dim]# include 'tt'[/]"
 
         is_imdb = re.match(r'^tt\d+$', title.strip().lower())
@@ -60,16 +59,10 @@ class API:
             return self.search_movies
 
         if result.get('Response') == 'False':
-            if result['Movie not found!']:
+            if str(result['Error']) == "Too many results.":
                 moai.says(
-                    f"[indian_red]x Sorry, The movie could not be found[/]\n"
-                    "[dim]      Try use imdb-id: tt___________[/]\n"
-                )
-            elif result['Error'] == "Too many results.":
-                moai.says(
-                    f"[indian_red]x Sorry, got too many results for \"{search_title}\"[/]\n"
-                    "         [bold]NOTE:[/] Try add year!\n"
-                    "      [dim]Try search: movie (year)[/]"
+                    f"[indian_red]x Sorry, many movies have similar names..[/]\n"
+                    "          [dim]Try use imdbid:[/] [yellow]tt..[/]"
                 )
             else:
                 moai.says(f"[indian_red]x Sorry, API error: ({result['Error']}) occured[/]\n[dim]This should not happen, up an issue to the dev[/]")
