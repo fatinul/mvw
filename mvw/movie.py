@@ -45,10 +45,15 @@ class MovieManager:
         try:
             return self.api.search_movie(title=title)
         except Exception as e:
-            moai.says(f"[indian_red]x Sorry, Searching movie error ({e}) occured.[/]")
-
-            if e == "Movie not found!":
-                console.print("You can check the title at [underline sky_blue2]https://www.omdb.org/en/us/search[/]")
+            if str(e) == "'Movie not found!'":
+                moai.says(
+                    f"[indian_red]x Sorry, The movie could not be found![/]\n"
+                    "          [dim]Try use imdbid:[/] [yellow]tt..[/]\n\n"
+                    "If still not found..  [dim]v--search here--v[/]\n"
+                    "      [underline sky_blue2]https://www.omdb.org/en/us/search[/]"
+                , moai="big")
+            else:
+                console.print("hi")
             abort()
 
     def fetch_box_office_worldwide(self, imdbid: str):

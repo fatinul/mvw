@@ -1,4 +1,6 @@
 import requests
+import re
+import os
 from .moai import Moai
 
 moai = Moai()
@@ -33,17 +35,38 @@ class API:
 
     def search_movie(self, title):
         """Search and return any movies that may relate to the title"""
+        # NOTE:
+        # "* [cyan]movie[/]         [dim]# standard[/]\n"
+        # "* [cyan]imdbid[/]        [dim]# include 'tt'[/]"
+
+        is_imdb = re.match(r'^tt\d+$', title.strip().lower())
+
         parameters = {
-            's': title,
             'type': 'movie',
             'r': 'json',
             'apikey': self.api_key
         }
-        result = requests.get(self.omdb_url, params=parameters).json()
 
-        if result.pop('Response') == 'False':
-            moai.says(f"[indian_red]x Sorry, API error: ({result['Error']}) occured[/]\n[dim]This should not happen, up an issue to the dev[/]")
+        if is_imdb:
+            parameters['i'] = title.strip()
+        else:
+            parameters['s'] = title
+
+        try:
+            result = requests.get(self.omdb_url, params=parameters).json()
+        except Exception as e:
+            moai.says(f"[indian_red]x Sorry, Connection error: ({e}) occured[/]")
             return self.search_movies
+
+        if result.get('Response') == 'False':
+            if str(result['Error']) == "Too many results.":
+                moai.says(
+                    f"[indian_red]x Sorry, many movies have similar names..[/]\n"
+                    "          [dim]Try use imdbid:[/] [yellow]tt..[/]"
+                )
+            else:
+                moai.says(f"[indian_red]x Sorry, API error: ({result['Error']}) occured[/]\n[dim]This should not happen, up an issue to the dev[/]")
+            os.abort()
 
         for key, value in result.items():
             key = key.lower()
@@ -59,7 +82,7 @@ if __name__ == "__main__":
 
     from iterfzf import iterfzf
 
-    results = api.search_movie("naruto")
+    results = api.search_movie("up")
     movies = results.get('search', [])
 
     movie_map = {f"{m['Title']} ({m['Year']})": m['imdbID'] for m in movies}

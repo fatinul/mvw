@@ -198,23 +198,32 @@ def interactive(title: str):
     if config_manager.get_config("API", "omdb_api_key"):
         moai.title()
         moai.says("[yellow] [/]: If you do not see a [italic yellow]smile[/] icon, [cyan]nerdfont[/] is not installed. ", moai="no")
+        moai.says(
+            "Search Guide:\n"
+            "* [cyan]movie[/]   [dim]# standard[/]\n"
+            "* [cyan]imdbid[/]  [dim]# include 'tt'[/]"
+        )
 
         if not title:
             title = click.prompt("MVW  ", prompt_suffix=">")
 
         search_response = movie_manager.search_movie(title)
-        search_movies_list = search_response.get('search', [])
 
-        search_movie_map = {f"{m['Title']} ({m['Year']})": m['imdbID'] for m in search_movies_list}
+        try:
+            search_movies_list = search_response.get('search', [])
 
-        choice = iterfzf(
-            search_movie_map.keys()
-        )
+            search_movie_map = {f"{m['Title']} ({m['Year']})": m['imdbID'] for m in search_movies_list}
 
-        if choice:
-            selected_id = search_movie_map[choice] # pyright: ignore
-        else:
-            moai.says("It seems like you did not choose any movie")
+            choice = iterfzf(
+                search_movie_map.keys()
+            )
+
+            if choice:
+                selected_id = search_movie_map[choice] # pyright: ignore
+            else:
+                moai.says("It seems like you did not choose any movie")
+        except AttributeError:
+            selected_id = search_response['imdbid']
 
         movie: dict = movie_manager.fetch_movie_metadata(imdbid=selected_id)
         poster_path = movie_manager.fetch_poster()
