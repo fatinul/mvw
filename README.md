@@ -13,7 +13,8 @@
       <h3>Fastfetch inspired movie reviews</h3>
       <p><em>Catalogue your own movie review inside your terminal.</em></p>
       <img src="https://img.shields.io/badge/python-3.12+-blue.svg" alt="Python">
-      <img src="https://img.shields.io/badge/license-MIT-green.svg" alt="License">
+      <img src="https://img.shields.io/github/license/fatinul/mvw" alt="License">
+      <img alt="GitHub Release" src="https://img.shields.io/github/v/release/fatinul/mvw?color=green">
       <br><br>
       <code>pipx install mvw</code>
       <br><br>
