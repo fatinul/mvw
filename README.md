@@ -25,7 +25,7 @@
 
 ---
 
-<img src="https://raw.githubusercontent.com/fatinul/mvw/latest/images/welcome.png" align="center">
+<img src="https://raw.githubusercontent.com/fatinul/mvw/main/images/welcome.png" align="center">
 
 ```
   ▁▁     ╭─────────────────────────────────────╮
@@ -36,17 +36,17 @@
 ### Interactive
 Default usage where you will get to experience the full experience of MVW. You will get to search, rate, review and also save your review. Every reviews will be saved in your local machine!
 
-![Interactive Command](https://raw.githubusercontent.com/fatinul/mvw/latest/demos/demo-interactive.gif)
+![Interactive Command](https://raw.githubusercontent.com/fatinul/mvw/main/demos/demo-interactive.gif)
 
 ### List
 You will get to see every past reviews that you had done in a simple interface supported by [iterfzf](https://github.com/dahlia/iterfzf)) which uses the "__Fuzzy Search__"
 
-![List Command](https://raw.githubusercontent.com/fatinul/mvw/latest/demos/demo-list.gif)
+![List Command](https://raw.githubusercontent.com/fatinul/mvw/main/demos/demo-list.gif)
 
 ### Config
 Everything that you can see in the config list can be configurable. From the poster_width, theme, your name, and even worldwide-boxoffice feature
 
-![Config Command](https://raw.githubusercontent.com/fatinul/mvw/latest/demos/demo-config.gif)
+![Config Command](https://raw.githubusercontent.com/fatinul/mvw/main/demos/demo-config.gif)
 
 ### Theme
 
@@ -54,13 +54,13 @@ Everything that you can see in the config list can be configurable. From the pos
 > You can see `svg` below if it is _supported_.
 
 - Gruvbox (The Default Theme)
-![Gruvbox](https://raw.githubusercontent.com/fatinul/mvw/latest/images/gruvbox.svg)
+![Gruvbox](https://raw.githubusercontent.com/fatinul/mvw/main/images/gruvbox.svg)
 
 - Catppuccin
-![Catpuccin](https://raw.githubusercontent.com/fatinul/mvw/latest/images/catppuccin.svg)
+![Catpuccin](https://raw.githubusercontent.com/fatinul/mvw/main/images/catppuccin.svg)
 
 - Nord
-![Nord](https://raw.githubusercontent.com/fatinul/mvw/latest/images/nord.svg)
+![Nord](https://raw.githubusercontent.com/fatinul/mvw/main/images/nord.svg)
 ---
 
 ## Features
