@@ -317,11 +317,31 @@ def poster(
 
     if path.valid_image_path(str(new_poster_path)):
         if imdbid:
-            database_manager.set_key_value(imdbid, attribute, new_poster_path)
-            preview(imdbid=imdbid)
+            preview(imdbid=imdbid, poster_path=str(new_poster_path))
+            change = click.confirm(
+                "MVW  change",
+                default=True,
+                prompt_suffix="?",
+                show_default=True
+            )
+            if change:
+                database_manager.set_key_value(imdbid, attribute, new_poster_path)
+            else:
+                moai.says(f"[yellow]✓ Poster ({imdbid}) [italic]remain[/italic] as usual.[/]")
+                preview(imdbid=imdbid)
         elif title:
-            database_manager.set_key_value(title, attribute, new_poster_path)
-            preview(title=title)
+            preview(title=title, poster_path=str(new_poster_path))
+            change = click.confirm(
+                "MVW  change",
+                default=True,
+                prompt_suffix="?",
+                show_default=True
+            )
+            if change:
+                database_manager.set_key_value(title, attribute, new_poster_path)
+            else:
+                moai.says(f"[yellow]✓ Poster ({imdbid}) [italic]remain[/italic] as usual.[/]")
+                preview(title=title)
     else:
         moai.says(
             f"[indian_red]x Sorry, ({poster_path}) is [italic]unsupported.[/][/]\n"
@@ -331,6 +351,7 @@ def poster(
 
 @app.command()
 def preview(
+    poster_path: str = "",
     imdbid: Optional[str] = typer.Option(None, "--id", "-i", help="Preview the review using tmdbid (tt..)"),
     title: Optional[str] = typer.Option(None, "--title", "-t", help="Preview the review using title (for now, need the exact title like in the review (case-sensitive))"),
 ):
@@ -341,11 +362,15 @@ def preview(
 
     if imdbid:
         previewed_movie = database_manager.get_movie_metadata_by_imdbid(imdbid)
-        display_manager = DisplayManager(previewed_movie, previewed_movie['poster_local_path'])
-        display_manager.display_movie_info(previewed_movie['star'],previewed_movie['review'])
     elif title:
         previewed_movie = database_manager.get_movie_metadata_by_title(title)
+
+    print(poster_path)
+    if poster_path == "":
         display_manager = DisplayManager(previewed_movie, previewed_movie['poster_local_path'])
+        display_manager.display_movie_info(previewed_movie['star'],previewed_movie['review'])
+    else:
+        display_manager = DisplayManager(previewed_movie, poster_path)
         display_manager.display_movie_info(previewed_movie['star'],previewed_movie['review'])
 
 @app.command()
@@ -359,7 +384,7 @@ def delete(
         return
 
     if imdbid:
-        preview(imdbid=imdbid, title=None)
+        preview(imdbid=imdbid, title=None, poster_path="")
         moai.says("Your movie were found! Are you sure, you want to delete the movie?")
         delete = click.confirm(
             "MVW  delete",
@@ -370,7 +395,7 @@ def delete(
         if delete:
             database_manager.delete_movie_entry_by_id(imdbid)
     elif title:
-        preview(imdbid=None, title=title)
+        preview(imdbid=None, title=title, poster_path="")
         moai.says("Your movie were [green]found![/] But.. Are you sure, you want to [italic red]delete[/] the movie?")
         delete = click.confirm(
             "MVW  delete",
