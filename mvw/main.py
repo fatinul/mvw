@@ -3,14 +3,15 @@ import click
 from iterfzf import iterfzf
 from rich.console import Console
 from typing import Optional
+from pathlib import Path
 
 from .config import ConfigManager
 from .display import DisplayManager
 from .movie import MovieManager
 from .database import DatabaseManager
 from .moai import Moai
-from .api import API
 from .menu import MenuManager
+from .path import PathManager
 
 app = typer.Typer(help="MVW - CLI MoVie revieW", context_settings={"help_option_names" : ["-h", "--help"]})
 
@@ -20,6 +21,7 @@ database_manager = DatabaseManager()
 moai = Moai()
 console = Console()
 menu = MenuManager()
+path = PathManager()
 
 @app.command()
 def config(
@@ -284,8 +286,48 @@ def list():
         menu.add_feature("Delete", delete, imdbid=imdbid)
         menu.add_feature("Edit", edit, movie=movie, poster_path=movie['poster_local_path'], already_reviewed=True)
         menu.add_feature("Save", save, movie=movie, poster_local_path=movie['poster_local_path'])
+        menu.add_feature("Change Poster", poster, poster_path="", imdbid=imdbid)
 
         menu.run(imdbid=imdbid)
+
+@app.command()
+def poster(
+    poster_path: Optional[str] = typer.Option("", "--path", "-p", help="The file path of the poster"),
+    imdbid: Optional[str] = typer.Option(None, "--id", "-i", help="Change the poster for movie with tmdbid (tt..)"),
+    title: Optional[str] = typer.Option(None, "--title", "-t", help="Change the poster for movie with title (for now, need the exact title like in the review (case-sensitive))"),
+):
+    """Change the poster for movies"""
+    if not (imdbid or title):
+        moai.says("Choose either [cyan]id[/] or [indian_red]title[/], try [yellow]`poster -h`[/]")
+        return
+
+    attribute = "poster_local_path"
+    print(poster_path)
+    
+    if poster_path == "":
+        new_poster_path = path.image_picker()
+    else:
+        new_poster_path = poster_path
+
+    if not Path(str(new_poster_path)).exists():
+        moai.says(
+            f"[indian_red]x Sorry, ({new_poster_path}) is [italic]not exist.[/]"
+        )
+        return
+
+    if path.valid_image_path(str(new_poster_path)):
+        if imdbid:
+            database_manager.set_key_value(imdbid, attribute, new_poster_path)
+            preview(imdbid=imdbid)
+        elif title:
+            database_manager.set_key_value(title, attribute, new_poster_path)
+            preview(title=title)
+    else:
+        moai.says(
+            f"[indian_red]x Sorry, ({poster_path}) is [italic]unsupported.[/][/]\n"
+                "[dim]Supported: .jpg, .jpeg, .png, .webp[/]"
+        )
+        return
 
 @app.command()
 def preview(

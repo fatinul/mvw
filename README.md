@@ -71,6 +71,7 @@ Everything that you can see in the config list can be configurable. From the pos
 | **Auto fetch movie data** | Uses [OMDb API](http://www.omdbapi.com/apikey.aspx) behind the hood to fetch movie data fast |
 | **Search movies** | Just give the movie title or imdbid to fetch the movie (no more EXACT) |
 | **Menu** | List every accessible feature when selected after `mvw list` |
+| **Change poster** | Change the default poster after fetch |
 | **Pixelated poster** | Unique way to view the poster __(fully intentional)__ |
 | **Configurable poster size** | Can change the poster width |
 | **Review history** | All review are saved in a database |
@@ -139,10 +140,15 @@ mvw config --theme "gruvbox"
 mvw config --moai                         # Toggle
 mvw config --review                       # Toggle
 mvw config --worldwide-boxoffice          # Toggle
+mvw config --hide-key                     # Toggle
 mvw config --reset                        # Toggle
 
 # List all reviewed movies
 mvw list
+
+# Change the poster
+mvw poster --id "ttxxxxxx" "poster_path"
+mvd poster --title "Inception" "poster_path"
 
 # Preview the reviewed movies
 mvw preview --id "ttxxxxxx"
@@ -157,7 +163,7 @@ mvd delete --title "Inception"
 
 ## Configuration
 
-Settings are atuomatically configured using `mvw config`
+Settings are automatically configured using `mvw config`
 
 ## FAQ
 ```
