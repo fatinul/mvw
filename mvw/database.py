@@ -215,6 +215,18 @@ class DatabaseManager:
         except Exception as e:
             moai.says(f"[indian_red]x Sorry, Database error: ({e}) occured[/]\n[dim]This should not happen, up an issue to the dev[/]")
 
+    def set_key_value(self, identifier, attribute, value, use_title=False):
+        """Set the attribute category in database with value"""
+        id_column = "title" if use_title else "imdbid"
+        query = f"UPDATE movies SET {attribute} = ? WHERE {id_column} = ?"
+        try:
+            cursor = self.conn.cursor()
+            cursor.execute(query, (value, identifier))
+            self.conn.commit()
+            moai.says(f"[green]✓ Database ({attribute}: {value}) [italic]updated[/italic] successfully[/]")
+        except Exception as e:
+            moai.says(f"[indian_red]x Sorry, Database error: ({e}) occured[/]\n[dim]This should not happen, up an issue to the dev[/]")
+
     def close_db(self):
         """Call this when the cli shuts down"""
         if self.conn:

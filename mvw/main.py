@@ -9,8 +9,8 @@ from .display import DisplayManager
 from .movie import MovieManager
 from .database import DatabaseManager
 from .moai import Moai
-from .api import API
 from .menu import MenuManager
+from .path import PathManager
 
 app = typer.Typer(help="MVW - CLI MoVie revieW", context_settings={"help_option_names" : ["-h", "--help"]})
 
@@ -20,6 +20,7 @@ database_manager = DatabaseManager()
 moai = Moai()
 console = Console()
 menu = MenuManager()
+path = PathManager()
 
 @app.command()
 def config(
@@ -284,8 +285,34 @@ def list():
         menu.add_feature("Delete", delete, imdbid=imdbid)
         menu.add_feature("Edit", edit, movie=movie, poster_path=movie['poster_local_path'], already_reviewed=True)
         menu.add_feature("Save", save, movie=movie, poster_local_path=movie['poster_local_path'])
+        menu.add_feature("Change Poster", poster, imdbid=imdbid, poster_path = None)
 
         menu.run(imdbid=imdbid)
+
+@app.command()
+def poster(
+    poster_path: str,
+    imdbid: Optional[str] = typer.Option(None, "--id", "-i", help="Change the poster for movie with tmdbid (tt..)"),
+    title: Optional[str] = typer.Option(None, "--title", "-t", help="Change the poster for movie with title (for now, need the exact title like in the review (case-sensitive))"),
+):
+    """Change the poster for movies"""
+    if not (imdbid or title):
+        moai.says("Choose either [cyan]id[/] or [indian_red]title[/], try [yellow]`poster -h`[/]")
+        return
+
+    attribute = "poster_local_path"
+
+    if imdbid:
+        if not poster_path:
+            new_poster_path = str(path.image_picker())
+        else:
+            new_poster_path = poster_path
+        database_manager.set_key_value(imdbid, attribute, new_poster_path)
+        preview(imdbid=imdbid)
+    elif title:
+        new_poster_path = str(path.image_picker())
+        database_manager.set_key_value(title, attribute, new_poster_path)
+        preview(title=title)
 
 @app.command()
 def preview(
