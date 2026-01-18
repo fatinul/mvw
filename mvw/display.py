@@ -238,7 +238,62 @@ class DisplayManager:
             for line in lines:
                 console.print(line)
 
-            console.save_svg(str(svg_path), title=f"MVW (MoVie revieW) 🗿", theme=palette.theme)
+            # Add nerfont support
+            svg_code_format = '''<svg class="rich-terminal" viewBox="0 0 {width} {height}" xmlns="http://www.w3.org/2000/svg">
+    <!-- Generated with Rich https://www.textualize.io -->
+    <style>
+
+    @font-face {{
+        font-family: "FiraCode Nerd Font";
+        src: local("FiraCode Nerd Font"),
+                local("FiraCodeNF-Regular"),
+                url("https://cdn.jsdelivr.net/gh/ryanoasis/nerd-fonts@v3.1.1/patched-fonts/FiraCode/Regular/FiraCodeNerdFont-Regular.ttf") format("truetype");
+        font-style: normal;
+        font-weight: 400;
+    }}
+    @font-face {{
+        font-family: "FiraCode Nerd Font";
+        src: local("FiraCode Nerd Font Bold"),
+                local("FiraCodeNF-Bold"),
+                url("https://cdn.jsdelivr.net/gh/ryanoasis/nerd-fonts@v3.1.1/patched-fonts/FiraCode/Bold/FiraCodeNerdFont-Bold.ttf") format("truetype");
+        font-style: bold;
+        font-weight: 700;
+    }}
+
+    .{unique_id}-matrix {{
+        font-family: "FiraCode Nerd Font", "Symbols Nerd Font", monospace;
+        font-size: {char_height}px;
+        line-height: {line_height}px;
+        font-variant-east-asian: full-width;
+    }}
+
+    .{unique_id}-title {{
+        font-size: 18px;
+        font-weight: bold;
+        font-family: arial;
+    }}
+
+    {styles}
+    </style>
+
+    <defs>
+    <clipPath id="{unique_id}-clip-terminal">
+      <rect x="0" y="0" width="{terminal_width}" height="{terminal_height}" />
+    </clipPath>
+    {lines}
+    </defs>
+
+    {chrome}
+    <g transform="translate({terminal_x}, {terminal_y})" clip-path="url(#{unique_id}-clip-terminal)">
+    {backgrounds}
+    <g class="{unique_id}-matrix">
+    {matrix}
+    </g>
+    </g>
+</svg>
+'''
+
+            console.save_svg(str(svg_path), title=f"MVW (MoVie revieW) 🗿", theme=palette.theme, code_format=svg_code_format)
             moai.says(f"[green]✓ {self.movie['title']} ({svg_path}) [italic]saved[/italic] successfully[/]\nNote that it was in [yellow]`svg`[/] so prefered to use [italic]browser[/] to view")
         except Exception as e:
             moai.says(f"[indian_red]x Sorry, Screenshot error ({e}) occured.[/]")
