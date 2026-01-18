@@ -135,7 +135,7 @@ def edit(
             type=click.FloatRange(0, 5),
             default=movie['star'],
             show_default=True,
-            prompt_suffix=">"
+            prompt_suffix="> "
         )
         
         moai.says(
@@ -147,13 +147,13 @@ def edit(
         use_text_editor = click.confirm(
             "MVW 󰭹  text editor",
             default=False,
-            prompt_suffix="?",
+            prompt_suffix="? ",
             show_default=True
         )
         if use_text_editor:
             review: str = click.edit(movie['review']) # pyright: ignore
         else:
-            review = click.prompt("MVW 󰭹 ", prompt_suffix=">")
+            review = click.prompt("MVW 󰭹 ", prompt_suffix="> ")
 
         database_manager.update_star_review(movie['imdbid'], star, review) 
         moai.says(f"[green]✓ Your Star & Review got [italic]updated[/italic] successfully[/]")
@@ -172,7 +172,7 @@ def edit(
             type=click.FloatRange(0, 5),
             default=2.5,
             show_default=True,
-            prompt_suffix=">"
+            prompt_suffix="> "
         )
 
         moai.says(
@@ -186,7 +186,7 @@ def edit(
             "MVW 󰭹  text editor",
             default=False,
             show_default=True,
-            prompt_suffix="?"
+            prompt_suffix="? "
         )
         if use_text_editor:
             review: str = click.edit() # pyright: ignore
@@ -194,7 +194,7 @@ def edit(
             moai.says(
                 "Be [bold]careful[/] to not make as much mistake as you [indian_red]cannot[/] move to the left except [italic]backspacing[/]"
             )
-            review = click.prompt("MVW 󰭹 ", prompt_suffix=">")
+            review = click.prompt("MVW 󰭹 ", prompt_suffix="> ")
 
         database_manager.store_movie_metadata(movie, poster_path, star, review) 
         return star, review
@@ -217,7 +217,7 @@ def interactive(title: str):
         )
 
         if not title:
-            title = click.prompt("MVW  ", prompt_suffix=">")
+            title = click.prompt("MVW  ", prompt_suffix="> ")
 
         search_response = movie_manager.search_movie(title)
 
@@ -258,7 +258,7 @@ def interactive(title: str):
         screenshot = click.confirm(
             "MVW   (.svg)",
             default=False,
-            prompt_suffix="?",
+            prompt_suffix="? ",
             show_default=True
         )
 
@@ -331,7 +331,7 @@ def poster(
             change = click.confirm(
                 "MVW  change",
                 default=True,
-                prompt_suffix="?",
+                prompt_suffix="? ",
                 show_default=True
             )
             if change:
@@ -344,7 +344,7 @@ def poster(
             change = click.confirm(
                 "MVW  change",
                 default=True,
-                prompt_suffix="?",
+                prompt_suffix="? ",
                 show_default=True
             )
             if change:
@@ -399,7 +399,7 @@ def delete(
         delete = click.confirm(
             "MVW  delete",
             default=True,
-            prompt_suffix="?",
+            prompt_suffix="? ",
             show_default=True
         )
         if delete:
@@ -410,7 +410,7 @@ def delete(
         delete = click.confirm(
             "MVW  delete",
             default=True,
-            prompt_suffix="?",
+            prompt_suffix="? ",
             show_default=True
         )
         if delete:
