@@ -46,9 +46,9 @@ def config(
         # Check the api key validation
         if  movie_manager.test_api_key(api_key):
             config_manager.set_config("API", "omdb_api_key", api_key)
-            moai.says(f"[green]✓ API Key [italic]added[/italic] successfully[/]")
+            moai.says(f"[green]✓ API Key [italic]added[/italic] successfully[/]", type="fun")
         else:
-            moai.says(f"[indian_red]x Sorry, API Key ({api_key}) seems [italic]wrong[/]")
+            moai.says(f"[yellow]x Ermm.. actually the API Key ({api_key}) is [italic]invalid~[/]\n[dim]          Double check pls, Thank you[/]", type="nerd")
 
     if name:
         config_manager.set_config("USER", "name", name)
@@ -57,60 +57,60 @@ def config(
         moai_bool = config_manager.get_config("UI", "moai").lower() == "true"
 
         if moai_bool:
-            moai.says(f"[dim light_steel_blue3]Bye, see you again later..[/]")
+            moai.says(f"[dim light_steel_blue3]Bye, see you again later..[/]", type="sad")
             config_manager.set_config("UI", "moai", "false")
         else:
             config_manager.set_config("UI", "moai", "true")
-            moai.says(f"[green]Hi, nice to see you again![/]")
+            moai.says(f"[green]Hi, nice to see you again![/]", type="fun")
 
     if review:
         review_bool = config_manager.get_config("UI", "review").lower() == "true"
 
         if review_bool:
-            moai.says(f"[dim]The review will be hidden[/]")
+            moai.says(f"[dim]The review will be hidden[/]", type="sad")
             config_manager.set_config("UI", "review", "false")
         else:
-            config_manager.set_config("UI", "moai", "true")
-            moai.says(f"[green]The review will be [italic]un[/italic]hidden[/green]")
+            config_manager.set_config("UI", "review", "true")
+            moai.says(f"[green]The review will be [italic]un[/italic]hidden[/green]", type="fun")
 
     if worldwide_boxoffice:
         worldwide_boxoffice_bool = config_manager.get_config("DATA", "worldwide_boxoffice").lower() == "true"
         if worldwide_boxoffice_bool:
             config_manager.set_config("DATA", "worldwide_boxoffice", "false")
-            moai.says(f"[green]The boxoffice scope => [italic]domestic[/]")
+            moai.says(f"[green]The boxoffice scope => [italic]domestic[/]", type="fun")
         else:
-            moai.says(f"[green]The boxoffice scope => [italic]worldwide[/]")
+            moai.says(f"[green]The boxoffice scope => [italic]worldwide[/]", type="fun")
             config_manager.set_config("DATA", "worldwide_boxoffice", "true")
 
     if poster_width:
         try:
             int(poster_width)
             config_manager.set_config("UI", "poster_width", poster_width)
-            moai.says(f"[green]✓ Poster width ({poster_width}) [italic]resized[/italic] successfully[/]")
+            moai.says(f"[green]✓ Poster width ({poster_width}) [italic]resized[/italic] successfully[/]", type="fun")
         except:
-            moai.says(f"[indian_red]x Sorry, Poster Width cannot be other than [italic]whole number[/]\n[dim]                    P/S: no comma[/]")
+            moai.says(f"[yellow]x Based on my calculation, [bold]Poster Width[/bold] cannot be other than a [italic]whole number[/]\n[dim]                   P/S: no comma, fraction or decimal[/]", type="nerd")
 
     if poster_border:
         poster_border_bool = config_manager.get_config("UI", "poster_border").lower() == "true"
         if poster_border_bool :
             config_manager.set_config("UI", "poster_border", "false")
-            moai.says(f"[yellow]The poster border will be [italic]hidden[/]")
+            moai.says(f"[green]The poster border will be [italic]hidden[/]", type="fun")
         else:
-            moai.says(f"[green]The poster border will be [italic]shown[/]")
+            moai.says(f"[green]The poster border will be [italic]shown[/]", type="fun")
             config_manager.set_config("UI", "poster_border", "true")
 
     if hide_key:
         hide_key_bool = config_manager.get_config("UI", "hide_key").lower() == "true"
         if hide_key_bool:
             config_manager.set_config("UI", "hide_key", "false")
-            moai.says(f"[yellow]The api key will be [italic]shown[/]")
+            moai.says(f"[yellow]The api key will be [italic]shown[/italic],\n[dim]P/S: Remember don't share your key with anyone[/]", type="nerd")
         else:
-            moai.says(f"[green]The api key will be [italic]hidden[/]")
+            moai.says(f"[green]The api key will be [italic]hidden[/]", type="fun")
             config_manager.set_config("UI", "hide_key", "true")
 
     if theme:
         config_manager.set_config("UI", "theme", theme)
-        moai.says(f"[green]✓ The theme ({theme}) [italic]configured[/italic] successfully[/]")
+        moai.says(f"[green]✓ The theme ({theme}) [italic]configured[/italic] successfully[/]", type="fun")
 
     config_manager.show_config()
 
@@ -126,8 +126,8 @@ def edit(
         display_manager.display_movie_info(movie['star'], movie['review'])
 
         moai.says(
-            f"Seems like your past rating is {movie['star']}.\n"
-            f"Press [yellow]ENTER[/] if want to skip it"
+            f"[yellow]It seems like your past rating is {movie['star']}.\n"
+            f"    [dim]Press [bold]ENTER[/bold] if want to skip it[/]", type="nerd"
         )
 
         star = click.prompt(
@@ -139,14 +139,15 @@ def edit(
         )
         
         moai.says(
-            f"Seems like you have already reviewed [yellow]\"{movie['title']}\"[/],\n"
+            f"You already reviewed [yellow]\"{movie['title']}\"[/],\n"
             "I recommend for you to [cyan]re-edit[/] using your [italic]default text editor[/]\n"
-            "so you won't need to write them from [indian_red italic]scratch..[/]"
+            "so you won't need to write them from [indian_red italic]scratch..[bold] again..[/]",
+            type="info"
         )
 
         use_text_editor = click.confirm(
             "MVW 󰭹  text editor",
-            default=False,
+            default=True,
             prompt_suffix="? ",
             show_default=True
         )
@@ -156,15 +157,16 @@ def edit(
             review = click.prompt("MVW 󰭹 ", prompt_suffix="> ")
 
         database_manager.update_star_review(movie['imdbid'], star, review) 
-        moai.says(f"[green]✓ Your Star & Review got [italic]updated[/italic] successfully[/]")
+        moai.says(f"[green]✓ Your Star & Review got [italic]updated[/italic] successfully[/]", type="fun")
         return star, review
     else:
         display_manager = DisplayManager(movie, poster_path)
         display_manager.display_movie_info()
 
         moai.says(
-            "The rating can be half [cyan](x.5)[/], it will be shown as [yellow] [/]\n"
-                "[dim]eg:[/] rating 2.5 =>[yellow]      [/] "
+            "[yellow]Did you know that, MVW support half rating [bold](x.5)[/bold], it will be shown as  \n"
+                "                    [dim]eg:[/dim] rating 2.5 =>      [/] ",
+            type="nerd"
         )
 
         star = click.prompt(
@@ -179,8 +181,9 @@ def edit(
             "The review section [italic]supports[/] [medium_purple1]rich[/] format.\n"
             "You can learn more at [sky_blue2 underline]https://rich.readthedocs.io/en/stable/markup.html[/]\n"
             "[dim]>> Examples: \\[blue]This is blue\\[/blue] -> [blue]This is blue[/blue], + more[/dim]" # pyright: ignore
-            "\n\nIn this section, you can choose to write the review [italic cyan]directly[/] in the terminal [default] (press [yellow]`ENTER`[/])\nor using your [italic hot_pink3]default text editor[/] [yellow](type `y`, `ENTER`)[/]"
-        , moai="big")
+            "\n\nIn this section, you can choose to write the review [italic cyan]directly[/] in the terminal [default] (press [yellow]`ENTER`[/])\nor using your [italic cyan]default text editor[/] [yellow](type `y`, `ENTER`)[/]",
+            type="info"
+        )
 
         use_text_editor = click.confirm(
             "MVW 󰭹  text editor",
@@ -192,7 +195,9 @@ def edit(
             review: str = click.edit() # pyright: ignore
         else:
             moai.says(
-                "Be [bold]careful[/] to not make as much mistake as you [indian_red]cannot[/] move to the left except [italic]backspacing[/]"
+                "[dim]Be [bold]careful[/] to not make as much mistake as you [indian_red]cannot[/indian_red] move to the left except [italic]backspacing[/italic]\n"
+                "                               [italic]I learned it the hard way[/]...[/]",
+                type="sad"
             )
             review = click.prompt("MVW 󰭹 ", prompt_suffix="> ")
 
@@ -213,7 +218,7 @@ def interactive(title: str):
         moai.says(
             "Search Guide:\n"
             "* [cyan]movie[/]   [dim]# standard[/]\n"
-            "* [cyan]imdbid[/]  [dim]# include 'tt'[/]"
+            "* [cyan]imdbid[/]  [dim]# include 'tt'[/]", type="info"
         )
 
         if not title:
@@ -233,7 +238,7 @@ def interactive(title: str):
             if choice:
                 selected_id = search_movie_map[choice] # pyright: ignore
             else:
-                moai.says("It seems like you did not choose any movie")
+                moai.says("[yellow]It seems like you did not choose any movie[/]", type="nerd")
         except AttributeError:
             selected_id = search_response['imdbid']
 
@@ -254,7 +259,7 @@ def interactive(title: str):
 
         star_review = edit(movie, poster_path, already_reviewed)
 
-        moai.says("Do you want to have an [cyan]\"image\"[/] of your review?\nTo change theme, try [yellow]`mvw config -t <THEME>`[/]")
+        moai.says("Do you want to have an [cyan]\"image\"[/] of your review?\nP/S: To change the theme, try [yellow]`mvw config -t <THEME>`[/]", type="info")
         screenshot = click.confirm(
             "MVW   (.svg)",
             default=False,
@@ -267,10 +272,10 @@ def interactive(title: str):
         else:
             DisplayManager(movie, poster_path).display_movie_info(star_review[0], star_review[1])
     else:
-        moai.says("Hi, [bold]API key[/] [indian_red]did not found[/], try [italic yellow]`mvw config --help`[/]\n"
+        moai.says("Hi, I could [indian_red]not found[/] your [bold]API key[/], try [italic yellow]`mvw config --help`[/]\n"
                     "While doing that, you can apply Free API key here:\n"
                     "       [sky_blue2 underline]http://www.omdbapi.com/apikey.aspx[/]\n"
-                    "             [dim]Try CTRL+left_click ^[/]", moai="big")
+                    "             [dim]Try CTRL+left_click ^[/]", type="info")
 
 @app.command()
 def list():
@@ -308,7 +313,7 @@ def poster(
 ):
     """Change the poster for movies"""
     if not (imdbid or title):
-        moai.says("Choose either [cyan]id[/] or [indian_red]title[/], try [yellow]`poster -h`[/]")
+        moai.says("Choose either [cyan]id[/] or [indian_red]title[/], try [yellow]`poster -h`[/]", type="info")
         return
 
     attribute = "poster_local_path"
@@ -321,7 +326,8 @@ def poster(
 
     if not Path(str(new_poster_path)).exists():
         moai.says(
-            f"[indian_red]x Sorry, ({new_poster_path}) is [italic]not exist.[/]"
+            f"[indian_red]x Sorry, ({new_poster_path}) is [italic]not exist.[/]",
+            type="error"
         )
         return
 
@@ -337,7 +343,7 @@ def poster(
             if change:
                 database_manager.set_key_value(imdbid, attribute, new_poster_path)
             else:
-                moai.says(f"[yellow]✓ Poster ({imdbid}) [italic]remain[/italic] as usual.[/]")
+                moai.says(f"[yellow]✓ Don't worry, your poster ({imdbid}) [italic]remain[/italic] as before.[/]", type="nerd")
                 preview(imdbid=imdbid)
         elif title:
             preview(title=title, poster_path=str(new_poster_path))
@@ -350,12 +356,13 @@ def poster(
             if change:
                 database_manager.set_key_value(title, attribute, new_poster_path)
             else:
-                moai.says(f"[yellow]✓ Poster ({imdbid}) [italic]remain[/italic] as usual.[/]")
+                moai.says(f"[yellow]✓ Don't worry, your poster ({title}) [italic]remain[/italic] as before.[/]", type="nerd")
                 preview(title=title)
     else:
         moai.says(
-            f"[indian_red]x Sorry, ({poster_path}) is [italic]unsupported.[/][/]\n"
-                "[dim]Supported: .jpg, .jpeg, .png, .webp[/]"
+            f"[indian_red]x Ermm.. actually ({poster_path}) format is [italic]unsupported.[/][/]\n"
+                "          [dim]MVW only supports: .jpg, .jpeg, .png, .webp[/]",
+            type="nerd"
         )
         return
 
@@ -367,7 +374,7 @@ def preview(
 ):
     """Preview reviewed movies"""
     if not (imdbid or title):
-        moai.says("Choose either to preview using [cyan]id[/] or [indian_red]title[/], try [yellow]`preview -h`[/]")
+        moai.says("Choose either to preview using [cyan]id[/] or [indian_red]title[/], try [yellow]`preview -h`[/]", type="info")
         return
 
     if imdbid:
@@ -390,12 +397,12 @@ def delete(
 ):
     """Delete reviewed movies"""
     if not (imdbid or title):
-        moai.says("Choose either to delete using [cyan]id[/] or [indian_red]title[/], try [yellow]`delete -h`[/]")
+        moai.says("Choose either to delete using [cyan]id[/] or [indian_red]title[/], try [yellow]`delete -h`[/]", type="info")
         return
 
     if imdbid:
         preview(imdbid=imdbid, title=None, poster_path="")
-        moai.says("Your movie were found! Are you sure, you want to delete the movie?")
+        moai.says("               [dim]We found your movie..\nBut.. Are you sure, you want to [italic red]delete[/] the movie?", type="sad")
         delete = click.confirm(
             "MVW  delete",
             default=True,
@@ -406,7 +413,7 @@ def delete(
             database_manager.delete_movie_entry_by_id(imdbid)
     elif title:
         preview(imdbid=None, title=title, poster_path="")
-        moai.says("Your movie were [green]found![/] But.. Are you sure, you want to [italic red]delete[/] the movie?")
+        moai.says("               [dim]We found your movie\nBut.. Are you sure, you want to [italic red]delete[/] the movie?", type="sad")
         delete = click.confirm(
             "MVW  delete",
             default=True,

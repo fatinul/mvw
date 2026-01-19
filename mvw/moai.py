@@ -21,11 +21,11 @@ MOAI_BASE = '''  ▁▁
 
 MOODS = {
     "normal": {"mouth": "══", "icon": " ", "color": "light_steel_blue3"},
-    "info":   {"mouth": "⛛ ", "icon": "ⓘ ", "color": "sky_blue1"},
+    "info":   {"mouth": "ᗜ ", "icon": "(i) ", "color": "sky_blue1"},
     "error":  {"mouth": "△═", "icon": "❗", "color": "indian_red"},
     "sad":    {"mouth": "︿", "icon": "💧", "color": "dim light_steel_blue3"},
-    "fun":    {"mouth": "ᗜ ", "icon": "✦ ", "color": "gold1"},
-    "nerd":   {"mouth": "3═", "icon": "👆", "color": "green_yellow"}
+    "fun":    {"mouth": "⛛ ", "icon": "✦𓈒", "color": "green"},
+    "nerd":   {"mouth": "3═", "icon": "👆", "color": "yellow"}
 }
 
 NO_MOAI = ''''''
@@ -81,9 +81,9 @@ class Moai:
             console.print(f"         [light_steel_blue3]{left.ljust(9)}{right}[/]")
 
 if __name__ == "__main__":
-    Moai().says(f"Hi handsome", type="normal")
-    Moai().says(f"Error", type="error")
-    Moai().says(f"Info", type="info")
+    Moai().says(f"Hi normal", type="normal")
+    Moai().says(f"Hi error", type="error")
+    Moai().says(f"Hi info", type="info")
     Moai().says(f"Hi sad", type="sad")
     Moai().says(f"Hi fun", type="fun")
     Moai().says(f"Hi nerd", type="nerd")

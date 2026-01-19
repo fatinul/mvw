@@ -12,7 +12,7 @@ class API:
         self.selected_movie: dict = {}
         self.omdb_url = 'http://www.omdbapi.com/'
 
-    def fetch_movie_metadata(self, imdbid:str, plot=None):
+    def fetch_movie_metadata(self, imdbid:str, plot=None, silent=False):
         """Get all the data movie"""
         parameters = {
             'i': imdbid,
@@ -23,7 +23,8 @@ class API:
         result = requests.get(self.omdb_url, params=parameters).json()
 
         if result.pop('Response') == 'False':
-            moai.says(f"[indian_red]x Sorry, API error: ({result['Error']}) occured[/]\n[dim]This should not happen, up an issue to the dev[/]")
+            if not silent:
+                moai.says(f"[indian_red]x Sorry, API error: ({result['Error']}) occured\n[dim]This should not happen, up an issue to the dev[/]", type="error")
             return self.selected_movie
 
         for key, value in result.items():
@@ -55,17 +56,18 @@ class API:
         try:
             result = requests.get(self.omdb_url, params=parameters).json()
         except Exception as e:
-            moai.says(f"[indian_red]x Sorry, Connection error: ({e}) occured[/]")
+            moai.says(f"[indian_red]x Sorry, Connection error: ({e}) occured[/]", type="error")
             return self.search_movies
 
         if result.get('Response') == 'False':
             if str(result['Error']) == "Too many results.":
                 moai.says(
-                    f"[indian_red]x Sorry, many movies have similar names..[/]\n"
-                    "          [dim]Try use imdbid:[/] [yellow]tt..[/]"
+                    f"[yellow]x Ermm.. actually there many movies with similar names.[/]\n"
+                    "             [dim]Try search with imdbid:[/] [yellow]tt..[/]",
+                    type="nerd"
                 )
             else:
-                moai.says(f"[indian_red]x Sorry, API error: ({result['Error']}) occured[/]\n[dim]This should not happen, up an issue to the dev[/]")
+                moai.says(f"[indian_red]x Sorry, API error: ({result['Error']}) occured\n[dim]This should not happen, up an issue to the dev[/]", type="error")
             os.abort()
 
         for key, value in result.items():
