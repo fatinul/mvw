@@ -1,6 +1,6 @@
 [project]
 name = "mvw"
-version = "0.3.0"
+version = "0.4.0"
 description = "CLI commands to catalogue all your movie reviews"
 readme = "README.md"
 authors = [
