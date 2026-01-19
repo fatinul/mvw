@@ -106,10 +106,10 @@ class DatabaseManager:
             if ConfigManager().get_config("DATA", "worldwide_boxoffice").lower() == "true":
                 self.set_movie_boxoffice_to_worldwide(movie['imdbid'])
 
-            moai.says(f"[green]✓ {movie['title']} [italic]saved[/italic] successfully[/]")
+            moai.says(f"[green]✓ {movie['title']} [italic]saved[/italic] successfully[/]", type="fun")
         except Exception as e:
             self.conn.rollback()
-            moai.says(f"[indian_red]x Sorry, Database error: ({e}) occured[/]\n[dim]This should not happen, up an issue to the dev[/]")
+            moai.says(f"[indian_red]x Sorry, Database error: ({e}) occured[/]\n[dim]This should not happen, up an issue to the dev[/]", type="error")
 
     def update_star_review(self, imdbid: str, star: float, review: str):
         """Update ONLY the star and review based on the IMDB ID"""
@@ -123,7 +123,7 @@ class DatabaseManager:
             self.conn.commit()
         except Exception as e:
             self.conn.rollback()
-            moai.says(f"[indian_red]x Sorry, Database error: ({e}) occured[/]\n[dim]This should not happen, up an issue to the dev[/]")
+            moai.says(f"[indian_red]x Sorry, Database error: ({e}) occured[/]\n[dim]This should not happen, up an issue to the dev[/]", type="error")
 
     def get_all_movies(self):
         """Get all movies in the database"""
@@ -170,11 +170,11 @@ class DatabaseManager:
 
             # Check if anything was actually deleted
             if cursor.rowcount > 0:
-                moai.says(f"[green]✓ Movie ({title}) [italic]deleted[/italic] successfully[/]")
+                moai.says(f"[green]✓ Movie ({title}) [italic]deleted[/italic] successfully[/]", type="fun")
             else:
-                moai.says(f"[indian_red]x Sorry, Movie not found[/]")
+                moai.says(f"[indian_red]x Sorry, Movie not found[/]", type="error")
         except Exception as e:
-            moai.says(f"[indian_red]x Sorry, Database error: ({e}) occured[/]")
+            moai.says(f"[indian_red]x Sorry, Database error: ({e}) occured[/]", type="error")
             self.conn.rollback()
 
     def delete_movie_entry_by_id(self, imdbid: str):
@@ -191,29 +191,30 @@ class DatabaseManager:
 
             # Check if anything was actually deleted
             if cursor.rowcount > 0:
-                moai.says(f"[green]✓ Movie with IMDB_ID ({imdbid}) [italic]deleted[/italic] successfully[/]")
+                moai.says(f"[green]✓ Movie with IMDB_ID ({imdbid}) [italic]deleted[/italic] successfully[/]", type="fun")
             else:
-                moai.says(f"[indian_red]x Sorry, Movie not found[/]")
+                moai.says(f"[indian_red]x Sorry, Movie not found[/]", type="error")
         except Exception as e:
-            moai.says(f"[indian_red]x Sorry, Database error: ({e}) occured[/]")
+            moai.says(f"[indian_red]x Sorry, Database error: ({e}) occured[/]", type="error")
             self.conn.rollback()
 
     def set_movie_boxoffice_to_worldwide(self, imdbid: str):
         """Save the worldwide box office"""
         worldwide_value = movie_manager.fetch_box_office_worldwide(imdbid)
         if not worldwide_value:
-            moai.says(f"[indian_red]x Sorry, There is no worldwide boxoffice for this entry")
+            moai.says(f"[indian_red]x Sorry, There is no worldwide boxoffice for this entry", type="error")
             return
         query = """
             UPDATE movies SET boxoffice = ? WHERE imdbid = ?
         """
         try:
+            raise Exception
             cursor = self.conn.cursor()
             cursor.execute(query, (worldwide_value, imdbid,))
             self.conn.commit()
-            moai.says(f"[green]✓ Worldwide Boxoffice ({worldwide_value}) [italic]fetched[/italic] successfully[/]")
+            moai.says(f"[green]✓ Worldwide Boxoffice ({worldwide_value}) [italic]fetched[/italic] successfully[/]", type="fun")
         except Exception as e:
-            moai.says(f"[indian_red]x Sorry, Database error: ({e}) occured[/]\n[dim]This should not happen, up an issue to the dev[/]")
+            moai.says(f"[indian_red]x Sorry, Database error: ({e}) occured[/]\n[dim]This should not happen, up an issue to the dev[/]", type="error")
 
     def set_key_value(self, identifier, attribute, value, use_title=False):
         """Set the attribute category in database with value"""
@@ -223,9 +224,9 @@ class DatabaseManager:
             cursor = self.conn.cursor()
             cursor.execute(query, (value, identifier))
             self.conn.commit()
-            moai.says(f"[green]✓ Database ({attribute}: {value}) [italic]updated[/italic] successfully[/]")
+            moai.says(f"[green]✓ Database ({attribute}: {value}) [italic]updated[/italic] successfully[/]", type="fun")
         except Exception as e:
-            moai.says(f"[indian_red]x Sorry, Database error: ({e}) occured[/]\n[dim]This should not happen, up an issue to the dev[/]")
+            moai.says(f"[indian_red]x Sorry, Database error: ({e}) occured[/]\n[dim]This should not happen, up an issue to the dev[/]", type="error")
 
     def close_db(self):
         """Call this when the cli shuts down"""

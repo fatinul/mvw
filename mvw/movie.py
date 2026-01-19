@@ -23,8 +23,11 @@ class MovieManager:
         try:
             # Create a new API_KEY so not use the self key
             api = API(api_key)
-            api.fetch_movie_metadata("tt3896198")
-            return True
+            movie = api.fetch_movie_metadata("tt3896198", silent=True)
+            if movie:
+                return True
+            else:
+                return False
         except Exception:
             return False
 
@@ -34,7 +37,7 @@ class MovieManager:
             self.movie = self.api.fetch_movie_metadata(imdbid=imdbid)
             return self.movie
         except Exception as e:
-            moai.says(f"[indian_red]x Sorry, Fetching movie error ({e}) occured.[/]")
+            moai.says(f"[indian_red]x Sorry, Fetching movie error ({e}) occured.[/]", type="error")
 
             if e == "Movie not found!":
                 console.print("You can check the title at [underline sky_blue2]https://www.omdb.org/en/us/search[/]")
@@ -50,8 +53,9 @@ class MovieManager:
                     f"[indian_red]x Sorry, The movie could not be found![/]\n"
                     "          [dim]Try use imdbid:[/] [yellow]tt..[/]\n\n"
                     "If still not found..  [dim]v--search here--v[/]\n"
-                    "      [underline sky_blue2]https://www.omdb.org/en/us/search[/]"
-                , moai="big")
+                    "      [underline sky_blue2]https://www.omdb.org/en/us/search[/]",
+                    type="error"
+                )
             else:
                 console.print("hi")
             abort()
@@ -77,19 +81,17 @@ class MovieManager:
                 return money_spans[-1].text.strip()
             return None
         except Exception as e:
-            moai.says(f"[indian_red]x Sorry, Web Scrapping Error ({e}) occured.[/]")
+            moai.says(f"[indian_red]x Sorry, Web Scrapping Error ({e}) occured.[/]", type="error")
 
     def fetch_poster(self):
         """Fetch movie poster and store in posters in data"""
         poster_link = self.movie['poster'] # pyright: ignore
 
-        # 1. Determine filename based on current link
         filename = poster_link.split("/")[-1].split("@")[0] + ".jpg"
         file_path = path.poster_dir / filename
 
-        # 2. Check if exists
         if file_path.exists():
-            moai.says(f"[yellow]Poster file already exists -> ([italic]No need to fetch![/])[/]")
+            moai.says(f"[yellow]It seems like your poster already existed\n[dim]    So.. no need to fetch a new one![/dim][/]", type="nerd")
             return file_path
 
         try:
@@ -100,11 +102,16 @@ class MovieManager:
                 for chunk in response.iter_content(chunk_size=8192):
                     f.write(chunk)
 
-            moai.says(f"[green]✓ Poster saved successfully[/]")
+            moai.says(f"[green]✓ Poster saved successfully[/]", type="fun")
             return file_path
 
-        except Exception as e:
-            moai.says(f"[orange1]Poster link are broken, switching to default poster...[/]")
+        except Exception:
+            moai.says(
+                f"[dim]We are very sorry because the [italic]poster link[/italic] is [indian_red]broken[/indian_red].. \n"
+                "    You might need to change the poster [italic]manually[/italic]..[/]\n"
+                "        Try.. [yellow]`mvw list` -> `Change Poster`[/yellow]",
+                type="sad"
+            )
 
 if __name__ == "__main__":
     print(MovieManager().fetch_box_office_worldwide("tt1877830"))

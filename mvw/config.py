@@ -65,7 +65,7 @@ class ConfigManager:
         self.set_config("API", "omdb_api_key", preserved_data_omdb_api_key)
         self.set_config("USER", "name", preserved_data_user_name)
         self.save_user_config()
-        moai.says(f"[green]✓ Config [italic]defaulted[/italic] successfully[/]")
+        moai.says(f"[green]✓ Config [italic]defaulted[/italic] successfully[/]", type="fun")
 
     def set_config(self, section: str, key: str, value: str = ""):
         """Update the config object and save it to the user.conf file"""

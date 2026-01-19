@@ -214,7 +214,7 @@ class DisplayManager:
             full_panel = Panel(main_layout, box=box.SIMPLE_HEAD, width=min(100, current_term_width))
             console.print(full_panel)
         except KeyError:
-            moai.says(f"[indian_red]x Sorry, TV Shows are currently not supported[/]")
+            moai.says(f"[yellow]x Ermm.. actually TV Shows are currently not supported[/]", type="nerd")
             os.abort()
         except Exception:
             print(f"The terminal preview is not supported")
@@ -294,9 +294,9 @@ class DisplayManager:
 '''
 
             console.save_svg(str(svg_path), title=f"MVW (MoVie revieW) 🗿", theme=palette.theme, code_format=svg_code_format)
-            moai.says(f"[green]✓ {self.movie['title']} ({svg_path}) [italic]saved[/italic] successfully[/]\nNote that it was in [yellow]`svg`[/] so prefered to use [italic]browser[/] to view")
+            moai.says(f"[green]✓ {self.movie['title']} ({svg_path}) [italic]saved[/italic] successfully[/]\nNote that it was in [yellow]`svg`[/] so prefered to use [italic]browser[/] to view", type="fun")
         except Exception as e:
-            moai.says(f"[indian_red]x Sorry, Screenshot error ({e}) occured.[/]")
+            moai.says(f"[indian_red]x Sorry, Screenshot error ({e}) occured.[/]", type="error")
 
     def iconize_star(self, star: float):
         star = max(0, min(5, star))
