@@ -259,6 +259,14 @@ def interactive(title: str):
 
         star_review = edit(movie, poster_path, already_reviewed)
 
+        # Get the latest update (incase worldwide boxoffice)
+        database_manager.store_movie_metadata(
+            movie,
+            poster_path,
+            star=star_review[0],
+            review=star_review[1]
+        )
+
         moai.says("Do you want to have an [cyan]\"image\"[/] of your review?\nP/S: To change the theme, try [yellow]`mvw config -t <THEME>`[/]", type="info")
         screenshot = click.confirm(
             "MVW   (.svg)",

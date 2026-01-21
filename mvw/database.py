@@ -101,10 +101,12 @@ class DatabaseManager:
                     movie['boxoffice'], movie['production'], movie['website'], poster_local_path, star, review
                 )
             )
-            self.conn.commit()
-
             if ConfigManager().get_config("DATA", "worldwide_boxoffice").lower() == "true":
-                self.set_movie_boxoffice_to_worldwide(movie['imdbid'])
+                new_boxoffice = self.set_movie_boxoffice_to_worldwide(movie['imdbid'])
+                if new_boxoffice:
+                    movie['boxoffice'] = new_boxoffice
+
+            self.conn.commit()
 
             moai.says(f"[green]✓ {movie['title']} [italic]saved[/italic] successfully[/]", type="fun")
         except Exception as e:
@@ -216,8 +218,10 @@ class DatabaseManager:
                     f"               ref: [sky_blue2 underline]https://www.boxofficemojo.com/title/{imdbid}[/]",
                     type="nerd"
                 )
+            return worldwide_value
         except Exception as e:
             moai.says(f"[indian_red]x Sorry, Database error: ({e}) occured[/]\n[dim]This should not happen, up an issue to the dev[/]", type="error")
+            return
 
     def set_key_value(self, identifier, attribute, value, use_title=False):
         """Set the attribute category in database with value"""
