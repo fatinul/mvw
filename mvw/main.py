@@ -200,8 +200,6 @@ def edit(
                 type="sad"
             )
             review = click.prompt("MVW 󰭹 ", prompt_suffix="> ")
-
-        database_manager.store_movie_metadata(movie, poster_path, star, review) 
         return star, review
 
 @app.command(hidden=True)

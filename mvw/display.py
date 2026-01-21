@@ -294,7 +294,7 @@ class DisplayManager:
 '''
 
             console.save_svg(str(svg_path), title=f"MVW (MoVie revieW) 🗿", theme=palette.theme, code_format=svg_code_format)
-            moai.says(f"[green]✓ {self.movie['title']} ({svg_path}) [italic]saved[/italic] successfully[/]\nNote that it was in [yellow]`svg`[/] so prefered to use [italic]browser[/] to view", type="fun")
+            moai.says(f"[green]✓ {self.movie['title']} ({svg_path}) [italic]saved[/italic] successfully[/]\n            [dim]Note that it was in [yellow]`svg`[/yellow] so prefered to use [italic]browser[/italic] to view[/]", type="fun")
         except Exception as e:
             moai.says(f"[indian_red]x Sorry, Screenshot error ({e}) occured.[/]", type="error")
 
