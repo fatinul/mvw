@@ -12,6 +12,7 @@ console = Console()
 moai = Moai()
 path = PathManager()
 
+
 class ConfigManager:
     def __init__(self) -> None:
         self.config = configparser.ConfigParser()
@@ -31,25 +32,26 @@ class ConfigManager:
 
     def _set_hardcoded_defaults(self):
         """Fallback if default conf missing"""
-        self.config['API'] = {'omdb_api_key': ''}
-        self.config['USER'] = {'name': ''}
-        self.config['UI'] = {
-            'moai': 'true',
-            'poster_width': '25',
-            'poster_border': 'true',
-            'theme': 'gruvbox',
-            'review': 'true',
-            'hide_key': 'true',
+        self.config["API"] = {"omdb_api_key": ""}
+        self.config["USER"] = {"name": ""}
+        self.config["UI"] = {
+            "moai": "true",
+            "poster_width": "25",
+            "poster_border": "true",
+            "theme": "gruvbox",
+            "review": "true",
+            "hide_key": "true",
+            "render": "pixel",
         }
-        self.config['DATA'] = {'worldwide_boxoffice': 'false'}
+        self.config["DATA"] = {"worldwide_boxoffice": "false"}
 
     def save_user_config(self):
         """Saves only the current state to the user's config file"""
         self.user_file.parent.mkdir(parents=True, exist_ok=True)
-        with open(self.user_file, 'w') as f:
+        with open(self.user_file, "w") as f:
             self.config.write(f)
 
-    def get_config(self, section:str, key:str, fallback:str = ""):
+    def get_config(self, section: str, key: str, fallback: str = ""):
         """Get the defined settings in the CONFIG_FILE"""
         return self.config.get(section, key, fallback=fallback)
 
@@ -65,7 +67,9 @@ class ConfigManager:
         self.set_config("API", "omdb_api_key", preserved_data_omdb_api_key)
         self.set_config("USER", "name", preserved_data_user_name)
         self.save_user_config()
-        moai.says(f"[green]✓ Config [italic]defaulted[/italic] successfully[/]", type="fun")
+        moai.says(
+            f"[green]✓ Config [italic]defaulted[/italic] successfully[/]", type="fun"
+        )
 
     def set_config(self, section: str, key: str, value: str = ""):
         """Update the config object and save it to the user.conf file"""
@@ -106,13 +110,16 @@ class ConfigManager:
         console.print(f"                   mvw v{self.get_version()}")
         console.print(" ")
         console.print("Try [italic yellow]`config --help`[/] to edit the settings")
-        console.print("[dim]NOTE: [italic]worldwide_boxoffice[/] will only work for the [italic bold]next added[/] movie[/]")
+        console.print(
+            "[dim]NOTE: [italic]worldwide_boxoffice[/] will only work for the [italic bold]next added[/] movie[/]"
+        )
 
     def get_version(self):
         try:
             return version("mvw")
         except PackageNotFoundError:
             return "uknown"
+
 
 if __name__ == "__main__":
     ConfigManager().show_config()
