@@ -70,6 +70,9 @@ def config(
     reset: bool = typer.Option(
         False, "--reset", "-R", help="Reset the config into default configuration"
     ),
+    charset: Optional[str] = typer.Option(
+        None, "--charset", "-c", help="Set ASCII charset (minimal, dots, blocks) for ascii renderer"
+        ),
 ):
     """Config the settings"""
     if reset:
@@ -186,6 +189,20 @@ def config(
                 f"[yellow]x Sorry, '{render}' is not a valid render style.\n[dim]Available options: {', '.join(available_renderers)}[/]",
                 type="nerd",
             )
+
+    if charset:
+        valid_charsets = ["minimal", "dots", "blocks"]
+        if charset in valid_charsets:
+            config_manager.set_config("UI", "charset", charset)
+            moai.says(
+                  f"[green]✓ The charset ({charset}) [italic]configured[/italic] successfully[/]",
+                  type="fun",
+              )
+        else:
+          moai.says(
+              f"[yellow]x Sorry, '{charset}' is not a valid charset.\n[dim]Available options: {', '.join(valid_charsets)}[/]",
+              type="nerd",
+          )
 
     config_manager.show_config()
 

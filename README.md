@@ -143,6 +143,8 @@ mvw config --review                       # Toggle
 mvw config --worldwide-boxoffice          # Toggle
 mvw config --hide-key                     # Toggle
 mvw config --reset                        # Toggle
+mvw config --render                       # choose between pixel (default), blocks, ascii
+mvw config --render ascii --charset       # choose between minimal (default), dots, blocks
 
 # List all reviewed movies
 mvw list
@@ -159,6 +161,8 @@ mvd preview --title "Inception"
 mvw delete --id "ttxxxxxx"
 mvd delete --title "Inception"
 ```
+
+The `--charset` flag is only available for `--render ascii`. A custom minimal charset was created to better fit the constrained size of the poster. You can also choose dots ("•") and blocks (unicode blocks). This latter option is already similar to what you would get with `--render pixel` or with `--render blocks`. It will give you a lower resolution.
 
 ---
 
