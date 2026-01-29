@@ -4,7 +4,7 @@ requires-python = ">=3.12"
 
 [[package]]
 name = "asciify-them"
-version = "1.0.4"
+version = "1.1.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "contourpy" },
@@ -18,9 +18,9 @@ dependencies = [
     { name = "python-dateutil" },
     { name = "six" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/52/e7/91c8cdeea4657c29f80835617622294b4116328e959f566929f1413c6825/asciify_them-1.0.4.tar.gz", hash = "sha256:8b1dc5998e62ea07a1e1d4094c9ee3c69e157ede90eb77a9eeae3306d07f85b0", size = 17865, upload-time = "2026-01-16T12:33:17.327Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/e5/22/c873e39133ab3088c19cc03fb305b0a9865c08d702f42e4eb1a2d3a219c5/asciify_them-1.1.0.tar.gz", hash = "sha256:fd4537031f7cbcf8afadaa52040ad7099857a92596765cc5c94897d598df3dd7", size = 19053, upload-time = "2026-01-27T17:41:31.251Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/68/db/1dc801c8447c9683bac861420df09d1d6e04dbd8e5f1431f0529648c1e06/asciify_them-1.0.4-py3-none-any.whl", hash = "sha256:3b1d7aaf2046659ab5a1d9509bf6b1fadde21d484271943c51cd0c0865ffec32", size = 13385, upload-time = "2026-01-16T12:33:16.39Z" },
+    { url = "https://files.pythonhosted.org/packages/58/04/d54c20fc900b03d2619a05953890a216b2618ee8809177caf1b240dfe117/asciify_them-1.1.0-py3-none-any.whl", hash = "sha256:2fa4e33c1a9fb992768ef599b714e6152d28f53d9299ba3c8aee50272ad3dbe4", size = 14419, upload-time = "2026-01-27T17:41:29.753Z" },
 ]
 
 [[package]]
@@ -371,7 +371,7 @@ wheels = [
 
 [[package]]
 name = "mvw"
-version = "0.5.0"
+version = "0.5.1"
 source = { editable = "." }
 dependencies = [
     { name = "asciify-them" },
