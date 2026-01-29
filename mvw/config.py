@@ -42,6 +42,7 @@ class ConfigManager:
             "review": "true",
             "hide_key": "true",
             "render": "pixel",
+            "charset": "minimal",
         }
         self.config["DATA"] = {"worldwide_boxoffice": "false"}
 
