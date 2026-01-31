@@ -95,7 +95,7 @@ class DisplayManager:
                 main_layout = Group(Align.center(poster_panel), Text(" "), right_group)
             else:
                 body_table = Table.grid(padding=(0, 2))
-                body_table.add_column(width=self.poster_width + 2)
+                body_table.add_column(width=self.poster_width + 4)
                 body_table.add_column()
                 body_table.add_row(poster_panel, right_group)
 
