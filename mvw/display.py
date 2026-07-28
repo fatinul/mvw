@@ -14,6 +14,7 @@ from .config import ConfigManager
 from .path import PathManager
 from .theme import Palette
 from .renderers import get_renderer
+from .rt import normalize_review_count
 
 import os
 import sys
@@ -42,6 +43,9 @@ class DisplayManager:
         console.print(f"[{palette.style.get('movie_data')}]MOVIE_DATA[/]")
         console.print(f"[{palette.style.get('imdb_data')}]IMDB_DATA[/]")
         console.print(f"[{palette.style.get('stats_data')}]STATS_DATA[/]")
+        console.print(f"[{palette.style.get('rt_certified')}]RT_CERTIFIED[/]")
+        console.print(f"[{palette.style.get('rt_fresh')}]RT_FRESH[/]")
+        console.print(f"[{palette.style.get('rt_rotten')}]RT_ROTTEN[/]")
         console.print(f"[{palette.style.get('review_text')}]REVIEW_TEXT[/]")
 
     def display_movie_info(
@@ -83,12 +87,13 @@ class DisplayManager:
                     spacing,
                     self.movie_group(),
                     self.imdb_group(),
+                    self.rt_group(),
                     self.stats_group(),
                     review_group,
                 )
             else:
                 right_group = Group(
-                    spacing, self.movie_group(), self.imdb_group(), self.stats_group()
+                    spacing, self.movie_group(), self.imdb_group(), self.rt_group(), self.stats_group()
                 )
 
             if current_term_width < 70:
@@ -263,6 +268,73 @@ class DisplayManager:
         imdb_table.add_row("└  : ", imdb_rating)
 
         return Group(imdb_header, imdb_table)
+
+    def rt_group(self) -> Group | None:
+        tomatometer = self.movie.get("rt_tomatometer")
+        audience_score = self.movie.get("rt_audience_score")
+        certification = self.movie.get("rt_certification")
+        audience_reviews = self.movie.get("rt_audience_reviews")
+
+        if tomatometer is None and audience_score is None:
+            error_text = Text.from_markup(
+                f"[bold {str(palette.style.get('stats_data', 'indian_red'))}]󰈚 RT  : [/bold {str(palette.style.get('stats_data', 'indian_red'))}]"
+                f"[{str(palette.style.get('stats_data', 'indian_red'))}]Not available[/]",
+                style="bold",
+            )
+            return Group(error_text)
+
+        # Certification color
+        if certification == "Certified Fresh":
+            cert_color = str(palette.style.get("rt_certified", "gold"))
+            cert_label = "Certified Fresh"
+        elif certification == "Fresh":
+            cert_color = str(palette.style.get("rt_fresh", "green"))
+            cert_label = "Fresh"
+        elif certification == "Rotten":
+            cert_color = str(palette.style.get("rt_rotten", "red"))
+            cert_label = "Rotten"
+        else:
+            cert_color = str(palette.style.get("text", "white"))
+            cert_label = "N/A"
+
+        # Tomatometer icon color matches certification
+        tomatometer_icon_color = cert_color
+
+        # Audience icon color: green if >= 60, red otherwise
+        if audience_score is not None and audience_score >= 60:
+            audience_icon_color = str(palette.style.get("rt_fresh", "green"))
+        else:
+            audience_icon_color = str(palette.style.get("rt_rotten", "red"))
+
+        rt_table = Table.grid(expand=False)
+        rt_table.add_column()
+        rt_table.add_column(
+            style=str(palette.style.get("text", "white")), justify="left"
+        )
+
+        # Critic count
+        critic_fmt = normalize_review_count(critic_reviews)
+        audience_fmt = normalize_review_count(audience_reviews)
+
+        tomatometer_pct = f"{tomatometer}%" if tomatometer is not None else "N/A"
+        audience_pct = f"{audience_score}%" if audience_score is not None else "N/A"
+
+        rt_table.add_row(
+            f"[{tomatometer_icon_color}]├  : [/]",
+            f"[{tomatometer_icon_color}]{tomatometer_pct}[/] ({critic_fmt})",
+        )
+        rt_table.add_row(
+            f"[{audience_icon_color}]└  : [/]",
+            f"[{audience_icon_color}]{audience_pct}[/] ({audience_fmt})",
+        )
+
+        rt_header = Text.from_markup(
+            f"[bold {str(palette.style.get('imdb_data', 'yellow'))}]󰈚 RT  : [/bold {str(palette.style.get('imdb_data', 'yellow'))}]"
+            f"[{cert_color}]{cert_label}[/]",
+            style="bold",
+        )
+
+        return Group(rt_header, rt_table)
 
     def stats_group(self) -> Group:
         stats_table = Table.grid(expand=False)

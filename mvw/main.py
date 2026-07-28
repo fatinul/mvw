@@ -73,6 +73,9 @@ def config(
     charset: Optional[str] = typer.Option(
         None, "--charset", "-c", help="Set ASCII charset (minimal, dots, blocks) for ascii renderer"
         ),
+    debug: Optional[bool] = typer.Option(
+        None, "--debug", "-d", help="Toggle debug mode for RT scraping", show_default=False
+        ),
 ):
     """Config the settings"""
     if reset:
@@ -204,6 +207,15 @@ def config(
               type="nerd",
           )
 
+    if debug:
+        debug_bool = config_manager.get_config("UI", "debug").lower() == "true"
+        if debug_bool:
+            config_manager.set_config("UI", "debug", "false")
+            moai.says(f"[green]Debug mode [italic]disabled[/]", type="fun")
+        else:
+            config_manager.set_config("UI", "debug", "true")
+            moai.says(f"[green]Debug mode [italic]enabled[/]", type="fun")
+
     config_manager.show_config()
 
 
@@ -211,6 +223,19 @@ def config(
 def edit(movie, poster_path: str = "", already_reviewed: bool = True):
     """Edit the star and review"""
     if already_reviewed:
+        if not movie.get("rt_tomatometer"):
+            rt_data = movie_manager.fetch_rt_data(
+                movie["title"], movie["year"],
+                tomato_url=movie.get("tomato_url")
+            )
+            if rt_data:
+                movie.update(rt_data)
+                database_manager.set_key_value(movie["imdbid"], "rt_tomatometer", rt_data["rt_tomatometer"])
+                database_manager.set_key_value(movie["imdbid"], "rt_audience_score", rt_data["rt_audience_score"])
+                database_manager.set_key_value(movie["imdbid"], "rt_certification", rt_data["rt_certification"])
+                database_manager.set_key_value(movie["imdbid"], "rt_critic_reviews", rt_data["rt_critic_reviews"])
+                database_manager.set_key_value(movie["imdbid"], "rt_audience_reviews", rt_data["rt_audience_reviews"])
+
         display_manager = DisplayManager(movie, movie["poster_local_path"])
         display_manager.display_movie_info(movie["star"], movie["review"])
 
@@ -338,6 +363,13 @@ def interactive(title: str):
         movie: dict = movie_manager.fetch_movie_metadata(imdbid=selected_id)
         poster_path = movie_manager.fetch_poster()
 
+        rt_data = movie_manager.fetch_rt_data(
+            movie['title'], movie['year'],
+            tomato_url=movie.get('tomato_url')
+        )
+        if rt_data:
+            movie.update(rt_data)
+
         if poster_path == None:
             poster_path = "N/A"
         else:
@@ -350,6 +382,8 @@ def interactive(title: str):
 
         if movie_already_reviewed:
             movie = movie_already_reviewed
+            if rt_data:
+                movie.update(rt_data)
             already_reviewed = True
 
         star_review = edit(movie, poster_path, already_reviewed)
@@ -516,6 +550,19 @@ def preview(
         previewed_movie = database_manager.get_movie_metadata_by_imdbid(imdbid)
     elif title:
         previewed_movie = database_manager.get_movie_metadata_by_title(title)
+
+    if previewed_movie and not previewed_movie.get("rt_tomatometer"):
+        rt_data = movie_manager.fetch_rt_data(
+            previewed_movie["title"], previewed_movie["year"],
+            tomato_url=previewed_movie.get("tomato_url")
+        )
+        if rt_data:
+            previewed_movie.update(rt_data)
+            database_manager.set_key_value(previewed_movie["imdbid"], "rt_tomatometer", rt_data["rt_tomatometer"])
+            database_manager.set_key_value(previewed_movie["imdbid"], "rt_audience_score", rt_data["rt_audience_score"])
+            database_manager.set_key_value(previewed_movie["imdbid"], "rt_certification", rt_data["rt_certification"])
+            database_manager.set_key_value(previewed_movie["imdbid"], "rt_critic_reviews", rt_data["rt_critic_reviews"])
+            database_manager.set_key_value(previewed_movie["imdbid"], "rt_audience_reviews", rt_data["rt_audience_reviews"])
 
     print(poster_path)
     if poster_path == "":

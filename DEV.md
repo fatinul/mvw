@@ -1,0 +1,1 @@
+To start with the development, run `uv run main`. **.venv** will be automatically created.

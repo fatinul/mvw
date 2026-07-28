@@ -378,6 +378,7 @@ dependencies = [
     { name = "bs4" },
     { name = "iterfzf" },
     { name = "numpy" },
+    { name = "omdb" },
     { name = "pillow" },
     { name = "platformdirs" },
     { name = "requests" },
@@ -392,6 +393,7 @@ requires-dist = [
     { name = "bs4", specifier = ">=0.0.2" },
     { name = "iterfzf", specifier = ">=1.8.0.62.0" },
     { name = "numpy", specifier = ">=1.24.0" },
+    { name = "omdb", specifier = ">=0.10.0" },
     { name = "pillow", specifier = ">=10.0.0" },
     { name = "platformdirs", specifier = ">=4.5.1" },
     { name = "requests", specifier = ">=2.32.5" },
@@ -436,6 +438,18 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/76/95/bef5b37f29fc5e739947e9ce5179ad402875633308504a52d188302319c8/numpy-2.2.6-cp313-cp313t-musllinux_1_2_x86_64.whl", hash = "sha256:8e9ace4a37db23421249ed236fdcdd457d671e25146786dfc96835cd951aa7c1", size = 18385260, upload-time = "2025-05-17T21:43:05.189Z" },
     { url = "https://files.pythonhosted.org/packages/09/04/f2f83279d287407cf36a7a8053a5abe7be3622a4363337338f2585e4afda/numpy-2.2.6-cp313-cp313t-win32.whl", hash = "sha256:038613e9fb8c72b0a41f025a7e4c3f0b7a1b5d768ece4796b674c8f3fe13efff", size = 6377225, upload-time = "2025-05-17T21:43:16.254Z" },
     { url = "https://files.pythonhosted.org/packages/67/0e/35082d13c09c02c011cf21570543d202ad929d961c02a147493cb0c2bdf5/numpy-2.2.6-cp313-cp313t-win_amd64.whl", hash = "sha256:6031dd6dfecc0cf9f668681a37648373bddd6421fff6c66ec1624eed0180ee06", size = 12771374, upload-time = "2025-05-17T21:43:35.479Z" },
+]
+
+[[package]]
+name = "omdb"
+version = "0.10.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "requests" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/4f/be/ae1560e5f45c22df31b2ac293a3403097e844ac3aa7e05405e7afc9d2b4f/omdb-0.10.1.tar.gz", hash = "sha256:eeac363f1c2eb634e4ae898e227dedae810cce9b7ceba7e90c00c9219ee8f23b", size = 23185, upload-time = "2018-12-11T02:03:34.075Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/d5/b9/818c582f11000771372b3d043eaafb76386ef5f7f3318c1fee18c595534e/omdb-0.10.1-py2.py3-none-any.whl", hash = "sha256:2f44b25942f6ed4a2b51af3597417a8eaade30d2776cdbde9d9740cec8ff159c", size = 9846, upload-time = "2018-12-11T02:03:32.765Z" },
 ]
 
 [[package]]

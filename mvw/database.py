@@ -38,7 +38,12 @@ INIT_TABLE = '''
             website TEXT,
             poster_local_path TEXT,
             star TEXT,
-            review TEXT
+            review TEXT,
+            rt_tomatometer INTEGER,
+            rt_audience_score INTEGER,
+            rt_certification TEXT,
+            rt_critic_reviews INTEGER,
+            rt_audience_reviews INTEGER
         );
     '''
 
@@ -60,12 +65,14 @@ class DatabaseManager:
             # Note: We include poster_local_path, star, and review in the values list
             cursor.execute('''
                 INSERT INTO movies (
-                    title, year, rated, released, runtime, genre, director, writer, 
-                    actors, plot, language, country, awards, poster_link, metascore, 
-                    imdbrating, imdbvotes, imdbid, type, dvd, boxoffice, production, 
-                    website, poster_local_path, star, review
+                    title, year, rated, released, runtime, genre, director, writer,
+                    actors, plot, language, country, awards, poster_link, metascore,
+                    imdbrating, imdbvotes, imdbid, type, dvd, boxoffice, production,
+                    website, poster_local_path, star, review,
+                    rt_tomatometer, rt_audience_score, rt_certification, rt_critic_reviews, rt_audience_reviews
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+                        ?, ?, ?, ?, ?)
                 ON CONFLICT(imdbid) DO UPDATE SET
                     title=excluded.title,
                     year=excluded.year,
@@ -91,20 +98,47 @@ class DatabaseManager:
                     website=excluded.website,
                     poster_local_path=excluded.poster_local_path,
                     star=excluded.star,
-                    review=excluded.review
+                    review=excluded.review,
+                    rt_tomatometer=excluded.rt_tomatometer,
+                    rt_audience_score=excluded.rt_audience_score,
+                    rt_certification=excluded.rt_certification,
+                    rt_critic_reviews=excluded.rt_critic_reviews,
+                    rt_audience_reviews=excluded.rt_audience_reviews
             ''',(
-                    movie['title'], movie['year'], movie['rated'], movie['released'], 
-                    movie['runtime'], movie['genre'], movie['director'], movie['writer'], 
-                    movie['actors'], movie['plot'], movie['language'], movie['country'], 
-                    movie['awards'], movie['poster'], movie['metascore'], movie['imdbrating'], 
-                    movie['imdbvotes'], movie['imdbid'], movie['type'], movie['dvd'], 
-                    movie['boxoffice'], movie['production'], movie['website'], poster_local_path, star, review
+                    movie['title'], movie['year'], movie['rated'], movie['released'],
+                    movie['runtime'], movie['genre'], movie['director'], movie['writer'],
+                    movie['actors'], movie['plot'], movie['language'], movie['country'],
+                    movie['awards'], movie['poster'], movie['metascore'], movie['imdbrating'],
+                    movie['imdbvotes'], movie['imdbid'], movie['type'], movie['dvd'],
+                    movie['boxoffice'], movie['production'], movie['website'], poster_local_path, star, review,
+                    movie.get('rt_tomatometer'), movie.get('rt_audience_score'),
+                    movie.get('rt_certification'), movie.get('rt_critic_reviews'),
+                    movie.get('rt_audience_reviews')
                 )
             )
             if ConfigManager().get_config("DATA", "worldwide_boxoffice").lower() == "true":
                 new_boxoffice = self.set_movie_boxoffice_to_worldwide(movie['imdbid'])
                 if new_boxoffice:
                     movie['boxoffice'] = new_boxoffice
+
+            if not movie.get('rt_tomatometer'):
+                rt_data = movie_manager.fetch_rt_data(
+                    movie['title'], movie['year'],
+                    tomato_url=movie.get('tomato_url')
+                )
+                if rt_data:
+                    movie.update(rt_data)
+                    from .rt import normalize_review_count
+                    critic_fmt = normalize_review_count(rt_data.get('rt_critic_reviews'))
+                    audience_fmt = normalize_review_count(rt_data.get('rt_audience_reviews'))
+                    moai.says(
+                        f"[yellow]✓ I just searched (rottentomatoes.com) and found the RT scores "
+                        f"-> Tomatometer: [bold]{rt_data['rt_tomatometer']}%[/bold], "
+                        f"Audience: [bold]{rt_data['rt_audience_score']}%[/bold]\n"
+                        f"               Critic reviews: {critic_fmt}, Audience reviews: {audience_fmt}\n"
+                        f"               ref: [sky_blue2 underline]{movie.get('tomato_url', 'https://www.rottentomatoes.com/m/' + movie['title'].lower().replace(' ', '_'))}[/]",
+                        type="nerd"
+                    )
 
             self.conn.commit()
 
