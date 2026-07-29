@@ -47,6 +47,15 @@ INIT_TABLE = '''
         );
     '''
 
+TABLE_COLUMNS = [
+    "imdbid", "title", "year", "rated", "released", "runtime", "genre",
+    "director", "writer", "actors", "plot", "language", "country", "awards",
+    "poster_link", "metascore", "imdbrating", "imdbvotes", "type", "dvd",
+    "boxoffice", "production", "website", "poster_local_path", "star", "review",
+    "rt_tomatometer", "rt_audience_score", "rt_certification", "rt_critic_reviews",
+    "rt_audience_reviews",
+]
+
 class DatabaseManager:
     def __init__(self) -> None:
         self.conn = sqlite3.connect(path.db_path, check_same_thread=False)
@@ -57,7 +66,16 @@ class DatabaseManager:
     def initialize_db(self):
         cursor = self.conn.cursor()
         cursor.execute(INIT_TABLE)
+        self._migrate_schema(cursor)
         self.conn.commit()
+
+    def _migrate_schema(self, cursor):
+        cursor.execute("PRAGMA table_info(movies)")
+        existing = {row[1] for row in cursor.fetchall()}
+        for col in TABLE_COLUMNS:
+            if col not in existing:
+                kind = "INTEGER" if col in ("imdbrating", "rt_tomatometer", "rt_audience_score", "rt_critic_reviews", "rt_audience_reviews") else "TEXT"
+                cursor.execute(f"ALTER TABLE movies ADD COLUMN {col} {kind}")
 
     def store_movie_metadata(self, movie, poster_local_path: str, star: float, review: str):
         try:
@@ -179,7 +197,7 @@ class DatabaseManager:
         cursor.execute(query, (title,))
         row = cursor.fetchone()
 
-        return row
+        return dict(row) if row else None
 
     def get_movie_metadata_by_imdbid(self, imdbid: str):
         """Fetch a movie and all its genres in single query"""
@@ -190,7 +208,7 @@ class DatabaseManager:
         cursor.execute(query, (imdbid,))
         row = cursor.fetchone()
 
-        return row
+        return dict(row) if row else None
 
     def delete_movie_entry_by_title(self, title: str):
         """Delete the movie entry using its title"""

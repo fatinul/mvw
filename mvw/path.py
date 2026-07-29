@@ -40,3 +40,13 @@ class PathManager:
         else:
             return False
 
+if __name__ == "__main__":
+    path_manager = PathManager()
+    print(path_manager.config_dir)
+    print(path_manager.data_dir)
+    print(path_manager.screenshot_dir)
+    print(path_manager.poster_dir)
+    print(path_manager.user_conf_path)
+    print(path_manager.db_path)
+    
+

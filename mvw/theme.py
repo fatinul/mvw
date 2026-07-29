@@ -34,11 +34,11 @@ class Palette:
             "poster_border": f"rgb({self.theme.ansi_colors[7][0]},{self.theme.ansi_colors[7][1]},{self.theme.ansi_colors[7][2]})",
             "movie_data": f"rgb({self.theme.ansi_colors[2][0]},{self.theme.ansi_colors[2][1]},{self.theme.ansi_colors[2][2]})",
             "imdb_data": f"rgb({self.theme.ansi_colors[3][0]},{self.theme.ansi_colors[3][1]},{self.theme.ansi_colors[3][2]})",
-            "stats_data": f"rgb({self.theme.ansi_colors[1][0]},{self.theme.ansi_colors[1][1]},{self.theme.ansi_colors[1][2]})",
+            "stats_data": f"rgb({self.theme.ansi_colors[4][0]},{self.theme.ansi_colors[4][1]},{self.theme.ansi_colors[4][2]})",
             "text": f"rgb({self.theme.ansi_colors[7][0]},{self.theme.ansi_colors[7][1]},{self.theme.ansi_colors[7][2]})",
             "rt_certified": f"rgb({self._rt_gold[0]},{self._rt_gold[1]},{self._rt_gold[2]})",
-            "rt_fresh": f"rgb({self.theme.ansi_colors[2][0]},{self.theme.ansi_colors[2][1]},{self.theme.ansi_colors[2][2]})",
-            "rt_rotten": f"rgb({self.theme.ansi_colors[1][0]},{self.theme.ansi_colors[1][1]},{self.theme.ansi_colors[1][2]})",
+            "rt_fresh": f"rgb({self.theme.ansi_colors[1][0]},{self.theme.ansi_colors[1][1]},{self.theme.ansi_colors[1][2]})",
+            "rt_rotten": f"rgb({self.theme.ansi_colors[2][0]},{self.theme.ansi_colors[2][1]},{self.theme.ansi_colors[2][2]})",
         }
 
     # Gruvbox Dark

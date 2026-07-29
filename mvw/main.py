@@ -214,7 +214,7 @@ def config(
             moai.says(f"[green]Debug mode [italic]disabled[/]", type="fun")
         else:
             config_manager.set_config("UI", "debug", "true")
-            moai.says(f"[green]Debug mode [italic]enabled[/]", type="fun")
+            moai.says(f"[yellow]Debug mode [italic]enabled[/]", type="nerd")
 
     config_manager.show_config()
 
