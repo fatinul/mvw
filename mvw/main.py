@@ -208,6 +208,14 @@ def config(
           )
 
     if debug:
+        info = database_manager.get_debug_info()
+        console.print(f"\n[bold]Database:[/] {info['db_path']}")
+        console.print(f"[bold]Movies:[/] {info['movie_count']}")
+        console.print(f"[bold]Missing RT scores:[/] {info['missing_rt_count']}")
+        for m in info["movies"]:
+            rt = f"🍅 {m['rt_tomatometer']}%" if m['rt_tomatometer'] else "[dim]no RT[/]"
+            console.print(f"  {m['title']} ({m['imdbid']}) — {rt}")
+
         debug_bool = config_manager.get_config("UI", "debug").lower() == "true"
         if debug_bool:
             config_manager.set_config("UI", "debug", "false")
@@ -215,6 +223,7 @@ def config(
         else:
             config_manager.set_config("UI", "debug", "true")
             moai.says(f"[yellow]Debug mode [italic]enabled[/]", type="nerd")
+        return
 
     config_manager.show_config()
 

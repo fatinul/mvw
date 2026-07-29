@@ -56,6 +56,18 @@ TABLE_COLUMNS = [
     "rt_audience_reviews",
 ]
 
+INT_COLUMNS = {"imdbrating", "rt_tomatometer", "rt_audience_score", "rt_critic_reviews", "rt_audience_reviews"}
+
+def _row_to_dict(row: sqlite3.Row) -> dict:
+    d = dict(row)
+    for col in INT_COLUMNS:
+        if col in d and d[col] is not None:
+            try:
+                d[col] = int(d[col])
+            except (ValueError, TypeError):
+                pass
+    return d
+
 class DatabaseManager:
     def __init__(self) -> None:
         self.conn = sqlite3.connect(path.db_path, check_same_thread=False)
@@ -89,7 +101,7 @@ class DatabaseManager:
                     website, poster_local_path, star, review,
                     rt_tomatometer, rt_audience_score, rt_certification, rt_critic_reviews, rt_audience_reviews
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
                         ?, ?, ?, ?, ?)
                 ON CONFLICT(imdbid) DO UPDATE SET
                     title=excluded.title,
@@ -186,7 +198,7 @@ class DatabaseManager:
         """
         cursor = self.conn.cursor()
         cursor.execute(query)
-        return [dict(row) for row in cursor.fetchall()]
+        return [_row_to_dict(row) for row in cursor.fetchall()]
 
     def get_movie_metadata_by_title(self, title: str):
         """Fetch a movie and all its genres in single query"""
@@ -197,7 +209,7 @@ class DatabaseManager:
         cursor.execute(query, (title,))
         row = cursor.fetchone()
 
-        return dict(row) if row else None
+        return _row_to_dict(row) if row else None
 
     def get_movie_metadata_by_imdbid(self, imdbid: str):
         """Fetch a movie and all its genres in single query"""
@@ -208,7 +220,7 @@ class DatabaseManager:
         cursor.execute(query, (imdbid,))
         row = cursor.fetchone()
 
-        return dict(row) if row else None
+        return _row_to_dict(row) if row else None
 
     def delete_movie_entry_by_title(self, title: str):
         """Delete the movie entry using its title"""
@@ -286,6 +298,25 @@ class DatabaseManager:
             moai.says(f"[green]✓ Database ({attribute}: {value}) [italic]updated[/italic] successfully[/]", type="fun")
         except Exception as e:
             moai.says(f"[indian_red]x Sorry, Database error: ({e}) occured[/]\n[dim]This should not happen, up an issue to the dev[/]", type="error")
+
+    def get_debug_info(self):
+        """Return a dict of database diagnostics"""
+        cursor = self.conn.cursor()
+        cursor.execute("SELECT COUNT(*) FROM movies")
+        movie_count = cursor.fetchone()[0]
+        cursor.execute("PRAGMA table_info(movies)")
+        schema = {row[1]: row[2] for row in cursor.fetchall()}
+        cursor.execute("SELECT COUNT(*) FROM movies WHERE rt_tomatometer IS NULL")
+        missing_rt = cursor.fetchone()[0]
+        cursor.execute("SELECT title, imdbid, rt_tomatometer FROM movies ORDER BY title")
+        movies = [dict(row) for row in cursor.fetchall()]
+        return {
+            "db_path": str(self.conn.execute("PRAGMA database_list").fetchone()[2]),
+            "movie_count": movie_count,
+            "schema": schema,
+            "missing_rt_count": missing_rt,
+            "movies": movies,
+        }
 
     def close_db(self):
         """Call this when the cli shuts down"""
