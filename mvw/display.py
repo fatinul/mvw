@@ -16,8 +16,13 @@ from .theme import Palette
 from .renderers import get_renderer
 from .rt import normalize_review_count
 
-import os
 import sys
+
+if sys.platform == "win32" and hasattr(sys.stdout, "reconfigure"):
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
 
 console = Console(
     force_terminal=True, soft_wrap=True, color_system="truecolor", legacy_windows=False
@@ -52,12 +57,6 @@ class DisplayManager:
         self, star: float = 0.0, review_text: str = "Your review will show here."
     ):
         """The Movie Review Card"""
-        if sys.platform == "win32":
-            try:
-                sys.stdout.reconfigure(encoding="utf-8")
-            except AttributeError:
-                os.system("chcp 65001")
-
         reviewer_name = config_manager.get_config("USER", "name")
         suffix = "'s" if reviewer_name else ""
 

@@ -1,9 +1,16 @@
+import sys
 import typer
 import click
 from iterfzf import iterfzf
 from rich.console import Console
 from typing import Optional
 from pathlib import Path
+
+if sys.platform == "win32" and hasattr(sys.stdout, "reconfigure"):
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
 
 from .config import ConfigManager
 from .display import DisplayManager
@@ -208,14 +215,6 @@ def config(
           )
 
     if debug:
-        info = database_manager.get_debug_info()
-        console.print(f"\n[bold]Database:[/] {info['db_path']}")
-        console.print(f"[bold]Movies:[/] {info['movie_count']}")
-        console.print(f"[bold]Missing RT scores:[/] {info['missing_rt_count']}")
-        for m in info["movies"]:
-            rt = f"🍅 {m['rt_tomatometer']}%" if m['rt_tomatometer'] else "[dim]no RT[/]"
-            console.print(f"  {m['title']} ({m['imdbid']}) — {rt}")
-
         debug_bool = config_manager.get_config("UI", "debug").lower() == "true"
         if debug_bool:
             config_manager.set_config("UI", "debug", "false")
@@ -223,7 +222,6 @@ def config(
         else:
             config_manager.set_config("UI", "debug", "true")
             moai.says(f"[yellow]Debug mode [italic]enabled[/]", type="nerd")
-        return
 
     config_manager.show_config()
 
