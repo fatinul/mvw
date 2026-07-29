@@ -287,6 +287,31 @@ class DatabaseManager:
             moai.says(f"[indian_red]x Sorry, Database error: ({e}) occured[/]\n[dim]This should not happen, up an issue to the dev[/]", type="error")
             return
 
+    def set_rt_scores(self, imdbid: str, rt_data: dict):
+        """Update all RT score fields in a single query"""
+        try:
+            cursor = self.conn.cursor()
+            cursor.execute('''
+                UPDATE movies SET
+                    rt_tomatometer = ?,
+                    rt_audience_score = ?,
+                    rt_certification = ?,
+                    rt_critic_reviews = ?,
+                    rt_audience_reviews = ?
+                WHERE imdbid = ?
+            ''', (
+                rt_data.get("rt_tomatometer"),
+                rt_data.get("rt_audience_score"),
+                rt_data.get("rt_certification"),
+                rt_data.get("rt_critic_reviews"),
+                rt_data.get("rt_audience_reviews"),
+                imdbid,
+            ))
+            self.conn.commit()
+            moai.says("[green]✓ Rotten Tomatoes scores [italic]updated[/italic] successfully[/]", type="fun")
+        except Exception as e:
+            moai.says(f"[indian_red]x Sorry, Database error: ({e}) occured[/]\n[dim]This should not happen, up an issue to the dev[/]", type="error")
+
     def set_key_value(self, identifier, attribute, value, use_title=False):
         """Set the attribute category in database with value"""
         id_column = "title" if use_title else "imdbid"

@@ -237,11 +237,7 @@ def edit(movie, poster_path: str = "", already_reviewed: bool = True):
             )
             if rt_data and rt_data.get("rt_tomatometer") is not None:
                 movie.update(rt_data)
-                database_manager.set_key_value(movie["imdbid"], "rt_tomatometer", rt_data["rt_tomatometer"])
-                database_manager.set_key_value(movie["imdbid"], "rt_audience_score", rt_data["rt_audience_score"])
-                database_manager.set_key_value(movie["imdbid"], "rt_certification", rt_data["rt_certification"])
-                database_manager.set_key_value(movie["imdbid"], "rt_critic_reviews", rt_data["rt_critic_reviews"])
-                database_manager.set_key_value(movie["imdbid"], "rt_audience_reviews", rt_data["rt_audience_reviews"])
+                database_manager.set_rt_scores(movie["imdbid"], rt_data)
 
         display_manager = DisplayManager(movie, movie["poster_local_path"])
         display_manager.display_movie_info(movie["star"], movie["review"])
@@ -566,11 +562,7 @@ def preview(
         )
         if rt_data and rt_data.get("rt_tomatometer") is not None:
             previewed_movie.update(rt_data)
-            database_manager.set_key_value(previewed_movie["imdbid"], "rt_tomatometer", rt_data["rt_tomatometer"])
-            database_manager.set_key_value(previewed_movie["imdbid"], "rt_audience_score", rt_data["rt_audience_score"])
-            database_manager.set_key_value(previewed_movie["imdbid"], "rt_certification", rt_data["rt_certification"])
-            database_manager.set_key_value(previewed_movie["imdbid"], "rt_critic_reviews", rt_data["rt_critic_reviews"])
-            database_manager.set_key_value(previewed_movie["imdbid"], "rt_audience_reviews", rt_data["rt_audience_reviews"])
+            database_manager.set_rt_scores(previewed_movie["imdbid"], rt_data)
 
     print(poster_path)
     if poster_path == "":
@@ -610,11 +602,7 @@ def fetch_rt(
             movie["title"], movie["year"], tomato_url=tomato_url
         )
     if rt_data and rt_data.get("rt_tomatometer") is not None:
-        database_manager.set_key_value(imdbid, "rt_tomatometer", rt_data["rt_tomatometer"])
-        database_manager.set_key_value(imdbid, "rt_audience_score", rt_data["rt_audience_score"])
-        database_manager.set_key_value(imdbid, "rt_certification", rt_data["rt_certification"])
-        database_manager.set_key_value(imdbid, "rt_critic_reviews", rt_data["rt_critic_reviews"])
-        database_manager.set_key_value(imdbid, "rt_audience_reviews", rt_data["rt_audience_reviews"])
+        database_manager.set_rt_scores(imdbid, rt_data)
         preview(imdbid=imdbid)
     else:
         moai.says(
