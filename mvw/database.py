@@ -56,7 +56,7 @@ TABLE_COLUMNS = [
     "rt_audience_reviews",
 ]
 
-INT_COLUMNS = {"imdbrating", "rt_tomatometer", "rt_audience_score", "rt_critic_reviews", "rt_audience_reviews"}
+INT_COLUMNS = {"rt_tomatometer", "rt_audience_score", "rt_critic_reviews", "rt_audience_reviews"}
 
 def _row_to_dict(row: sqlite3.Row) -> dict:
     d = dict(row)
@@ -86,7 +86,7 @@ class DatabaseManager:
         existing = {row[1] for row in cursor.fetchall()}
         for col in TABLE_COLUMNS:
             if col not in existing:
-                kind = "INTEGER" if col in ("imdbrating", "rt_tomatometer", "rt_audience_score", "rt_critic_reviews", "rt_audience_reviews") else "TEXT"
+                kind = "INTEGER" if col in ("rt_tomatometer", "rt_audience_score", "rt_critic_reviews", "rt_audience_reviews") else "TEXT"
                 cursor.execute(f"ALTER TABLE movies ADD COLUMN {col} {kind}")
 
     def store_movie_metadata(self, movie, poster_local_path: str, star: float, review: str):
