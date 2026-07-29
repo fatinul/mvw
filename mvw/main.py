@@ -454,6 +454,7 @@ def list():
             "Save", save, movie=movie, poster_local_path=movie["poster_local_path"]
         )
         menu.add_feature("Change Poster", poster, poster_path="", imdbid=imdbid)
+        menu.add_feature("Fetch RT", fetch_rt, imdbid=imdbid)
 
         menu.run(imdbid=imdbid)
 
@@ -583,6 +584,42 @@ def preview(
         display_manager = DisplayManager(previewed_movie, poster_path)
         display_manager.display_movie_info(
             previewed_movie["star"], previewed_movie["review"]
+        )
+
+
+@app.command(hidden=True)
+def fetch_rt(
+    imdbid: Optional[str] = typer.Option(
+        None, "--id", "-i", help="Fetch RT data for movie with imdbid (tt..)"
+    ),
+):
+    """Manually provide a Rotten Tomatoes URL to fetch scores"""
+    if not imdbid:
+        return
+    movie = database_manager.get_movie_metadata_by_imdbid(imdbid)
+    if not movie:
+        moai.says(f"[indian_red]x Movie not found[/]", type="error")
+        return
+    tomato_url = click.prompt(
+        f"Paste the Rotten Tomatoes URL for {movie['title']}"
+    )
+    if not tomato_url:
+        return
+    with console.status("[bold]Fetching Rotten Tomatoes data...", spinner="earth"):
+        rt_data = movie_manager.fetch_rt_data(
+            movie["title"], movie["year"], tomato_url=tomato_url
+        )
+    if rt_data and rt_data.get("rt_tomatometer") is not None:
+        database_manager.set_key_value(imdbid, "rt_tomatometer", rt_data["rt_tomatometer"])
+        database_manager.set_key_value(imdbid, "rt_audience_score", rt_data["rt_audience_score"])
+        database_manager.set_key_value(imdbid, "rt_certification", rt_data["rt_certification"])
+        database_manager.set_key_value(imdbid, "rt_critic_reviews", rt_data["rt_critic_reviews"])
+        database_manager.set_key_value(imdbid, "rt_audience_reviews", rt_data["rt_audience_reviews"])
+        preview(imdbid=imdbid)
+    else:
+        moai.says(
+            f"[indian_red]x Could not extract RT scores from that URL[/]",
+            type="error"
         )
 
 
