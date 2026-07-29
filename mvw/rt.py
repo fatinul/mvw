@@ -149,6 +149,11 @@ def fetch_rotten_tomatoes_data(
         )
         _debug_print(f"Derived certification: {certification}", debug)
 
+        if scores["tomatometer"] is None and scores["audience_score"] is None:
+            _debug_print("No RT scores found, returning None", debug)
+            _debug_print("=== RT Fetch End (no data) ===", debug)
+            return None
+
         result = {
             "rt_tomatometer": scores["tomatometer"],
             "rt_audience_score": scores["audience_score"],

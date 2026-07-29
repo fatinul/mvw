@@ -235,7 +235,7 @@ def edit(movie, poster_path: str = "", already_reviewed: bool = True):
                 movie["title"], movie["year"],
                 tomato_url=movie.get("tomato_url")
             )
-            if rt_data:
+            if rt_data and rt_data.get("rt_tomatometer") is not None:
                 movie.update(rt_data)
                 database_manager.set_key_value(movie["imdbid"], "rt_tomatometer", rt_data["rt_tomatometer"])
                 database_manager.set_key_value(movie["imdbid"], "rt_audience_score", rt_data["rt_audience_score"])
@@ -563,7 +563,7 @@ def preview(
             previewed_movie["title"], previewed_movie["year"],
             tomato_url=previewed_movie.get("tomato_url")
         )
-        if rt_data:
+        if rt_data and rt_data.get("rt_tomatometer") is not None:
             previewed_movie.update(rt_data)
             database_manager.set_key_value(previewed_movie["imdbid"], "rt_tomatometer", rt_data["rt_tomatometer"])
             database_manager.set_key_value(previewed_movie["imdbid"], "rt_audience_score", rt_data["rt_audience_score"])

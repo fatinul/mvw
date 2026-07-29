@@ -156,7 +156,7 @@ class DatabaseManager:
                     movie['title'], movie['year'],
                     tomato_url=movie.get('tomato_url')
                 )
-                if rt_data:
+                if rt_data and rt_data.get('rt_tomatometer') is not None:
                     movie.update(rt_data)
                     from .rt import normalize_review_count
                     critic_fmt = normalize_review_count(rt_data.get('rt_critic_reviews'))
