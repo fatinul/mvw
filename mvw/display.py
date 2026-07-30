@@ -14,9 +14,15 @@ from .config import ConfigManager
 from .path import PathManager
 from .theme import Palette
 from .renderers import get_renderer
+from .rt import normalize_review_count
 
-import os
 import sys
+
+if sys.platform == "win32" and hasattr(sys.stdout, "reconfigure"):
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
 
 console = Console(
     force_terminal=True, soft_wrap=True, color_system="truecolor", legacy_windows=False
@@ -42,18 +48,15 @@ class DisplayManager:
         console.print(f"[{palette.style.get('movie_data')}]MOVIE_DATA[/]")
         console.print(f"[{palette.style.get('imdb_data')}]IMDB_DATA[/]")
         console.print(f"[{palette.style.get('stats_data')}]STATS_DATA[/]")
+        console.print(f"[{palette.style.get('rt_certified')}]RT_CERTIFIED[/]")
+        console.print(f"[{palette.style.get('rt_fresh')}]RT_FRESH[/]")
+        console.print(f"[{palette.style.get('rt_rotten')}]RT_ROTTEN[/]")
         console.print(f"[{palette.style.get('review_text')}]REVIEW_TEXT[/]")
 
     def display_movie_info(
         self, star: float = 0.0, review_text: str = "Your review will show here."
     ):
         """The Movie Review Card"""
-        if sys.platform == "win32":
-            try:
-                sys.stdout.reconfigure(encoding="utf-8")
-            except AttributeError:
-                os.system("chcp 65001")
-
         reviewer_name = config_manager.get_config("USER", "name")
         suffix = "'s" if reviewer_name else ""
 
@@ -83,12 +86,13 @@ class DisplayManager:
                     spacing,
                     self.movie_group(),
                     self.imdb_group(),
+                    self.rt_group(),
                     self.stats_group(),
                     review_group,
                 )
             else:
                 right_group = Group(
-                    spacing, self.movie_group(), self.imdb_group(), self.stats_group()
+                    spacing, self.movie_group(), self.imdb_group(), self.rt_group(), self.stats_group()
                 )
 
             if current_term_width < 70:
@@ -264,15 +268,100 @@ class DisplayManager:
 
         return Group(imdb_header, imdb_table)
 
-    def stats_group(self) -> Group:
-        stats_table = Table.grid(expand=False)
-        stats_table.add_column(style=str(palette.style.get("stats_data", "indian_red")))
-        stats_table.add_column(
+    def rt_group(self) -> Group | None:
+        tomatometer = self.movie.get("rt_tomatometer")
+        audience_score = self.movie.get("rt_audience_score")
+        certification = self.movie.get("rt_certification")
+        critic_reviews = self.movie.get("rt_critic_reviews")
+        audience_reviews = self.movie.get("rt_audience_reviews")
+
+        if tomatometer is None and audience_score is None:
+            error_text = Text.from_markup(
+                f"[bold {str(palette.style.get('rt_fresh', 'indian_red'))}] RT : [/bold {str(palette.style.get('rt_fresh', 'indian_red'))}]"
+                f"[{str(palette.style.get('text', 'white'))}]Not available[/]",
+                style="bold",
+            )
+            return Group(error_text)
+
+        # Determine Certification Colors and Icons
+        if certification == "Certified Fresh":
+            cert_color = str(palette.style.get("rt_certified", "yellow"))
+            cert_label = "Certified Fresh"
+            tomatometer_icon = ""  # Certified Fresh Icon
+        elif certification == "Fresh":
+            cert_color = str(palette.style.get("rt_fresh", "indian_red"))
+            cert_label = "Fresh"
+            tomatometer_icon = ""  # Fresh Icon
+        elif certification == "Rotten":
+            cert_color = str(palette.style.get("rt_rotten", "green"))
+            cert_label = "Rotten"
+            tomatometer_icon = "󱠦"  # Rotten Icon
+        else:
+            cert_color = str(palette.style.get("text", "white"))
+            cert_label = "N/A"
+            tomatometer_icon = ""
+
+        tomatometer_icon_color = cert_color
+
+        # Determine Popcornmeter (Audience Score) Colors and Icons
+        if audience_score is not None and audience_score >= 90:
+            audience_icon_color = str(palette.style.get("rt_certified", "yellow"))
+            audience_icon = "󰐢"  # Verified Hot Popcorn
+        elif audience_score is not None and audience_score >= 60:
+            audience_icon_color = str(palette.style.get("rt_fresh", "indian_red"))
+            audience_icon = "󰐢"  # Hot Popcorn
+        else:
+            audience_icon_color = str(palette.style.get("rt_rotten", "green"))
+            audience_icon = "󱐖"  # Spilled / Stale Popcorn
+
+        # Table Layout
+        rt_table = Table.grid(expand=False)
+        rt_table.add_column()
+        rt_table.add_column(
             style=str(palette.style.get("text", "white")), justify="left"
         )
 
+        # Format review counts
+        critic_fmt = normalize_review_count(critic_reviews)
+        audience_fmt = normalize_review_count(audience_reviews)
+
+        tomatometer_pct = f"{tomatometer}%" if tomatometer is not None else "N/A"
+        audience_pct = f"{audience_score}%" if audience_score is not None else "N/A"
+
+        text_color = str(palette.style.get("text", "white"))
+
+        # Only color the icon; keep tree bars, values, and counts in default text color
+        rt_table.add_row(
+            f"[{tomatometer_icon_color}]├ {tomatometer_icon} : [/{tomatometer_icon_color}]",
+            f"[{text_color}]{tomatometer_pct} ({critic_fmt})[/{text_color}]",
+        )
+        rt_table.add_row(
+            f"[{audience_icon_color}]└ {audience_icon} : [/{audience_icon_color}]",
+            f"[{text_color}]{audience_pct} ({audience_fmt})[/{text_color}]",
+        )
+
+        rt_header = Text.from_markup(
+            f"[bold {str(palette.style.get('rt_fresh', 'indian_red'))}] RT : [/bold {str(palette.style.get('rt_fresh', 'indian_red'))}]"
+            f"[{cert_color}]{cert_label}[/]",
+            style="bold",
+        )
+
+        return Group(rt_header, rt_table)
+
+    def stats_group(self) -> Group:
+        # Define turquoise color variable (uses palette style or falls back to 'cyan')
+        turquoise_color = str(
+            palette.style.get("stats_data", palette.style.get("cyan", "cyan"))
+        )
+        text_color = str(palette.style.get("text", "white"))
+
+        stats_table = Table.grid(expand=False)
+        stats_table.add_column(style=turquoise_color)
+        stats_table.add_column(style=text_color, justify="left")
+
         stats_header = Text.from_markup(
-            f"[bold {str(palette.style.get('stats_data', 'indian_red'))}]  STATS : [/bold {str(palette.style.get('stats_data', 'indian_red'))}][{str(palette.style.get('review_text', 'white'))}]{self.movie['boxoffice']}",
+            f"[bold {turquoise_color}]  STATS : [/bold {turquoise_color}]"
+            f"[{str(palette.style.get('review_text', 'white'))}]{self.movie['boxoffice']}",
             style="bold",
         )
 
@@ -281,7 +370,9 @@ class DisplayManager:
         if stats["oscars"] > 0:
             stats_table.add_row("├ 󰙍 : ", f"Won {stats['oscars']} Oscars")
 
-        stats_table.add_row("├ 󰴥 : ", f"Got {stats['nominations']} Nominations")
+        stats_table.add_row(
+            "├ 󰴥 : ", f"Got {stats['nominations']} Nominations"
+        )
         stats_table.add_row("└  : ", f"Won {stats['wins']} Awards")
 
         return Group(stats_header, stats_table)

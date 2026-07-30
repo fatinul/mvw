@@ -1,9 +1,16 @@
+import sys
 import typer
 import click
 from iterfzf import iterfzf
 from rich.console import Console
 from typing import Optional
 from pathlib import Path
+
+if sys.platform == "win32" and hasattr(sys.stdout, "reconfigure"):
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
 
 from .config import ConfigManager
 from .display import DisplayManager
@@ -72,6 +79,9 @@ def config(
     ),
     charset: Optional[str] = typer.Option(
         None, "--charset", "-c", help="Set ASCII charset (minimal, dots, blocks) for ascii renderer"
+        ),
+    debug: Optional[bool] = typer.Option(
+        None, "--debug", "-d", help="Toggle debug mode for RT scraping", show_default=False
         ),
 ):
     """Config the settings"""
@@ -204,6 +214,15 @@ def config(
               type="nerd",
           )
 
+    if debug:
+        debug_bool = config_manager.get_config("UI", "debug").lower() == "true"
+        if debug_bool:
+            config_manager.set_config("UI", "debug", "false")
+            moai.says(f"[green]Debug mode [italic]disabled[/]", type="fun")
+        else:
+            config_manager.set_config("UI", "debug", "true")
+            moai.says(f"[yellow]Debug mode [italic]enabled[/]", type="nerd")
+
     config_manager.show_config()
 
 
@@ -211,6 +230,15 @@ def config(
 def edit(movie, poster_path: str = "", already_reviewed: bool = True):
     """Edit the star and review"""
     if already_reviewed:
+        if not movie.get("rt_tomatometer"):
+            rt_data = movie_manager.fetch_rt_data(
+                movie["title"], movie["year"],
+                tomato_url=movie.get("tomato_url")
+            )
+            if rt_data and rt_data.get("rt_tomatometer") is not None:
+                movie.update(rt_data)
+                database_manager.set_rt_scores(movie["imdbid"], rt_data)
+
         display_manager = DisplayManager(movie, movie["poster_local_path"])
         display_manager.display_movie_info(movie["star"], movie["review"])
 
@@ -270,7 +298,7 @@ def edit(movie, poster_path: str = "", already_reviewed: bool = True):
         moai.says(
             "The review section [italic]supports[/] [medium_purple1]rich[/] format.\n"
             "You can learn more at [sky_blue2 underline]https://rich.readthedocs.io/en/stable/markup.html[/]\n"
-            "[dim]>> Examples: \\[blue]This is blue\\[/blue] -> [blue]This is blue[/blue], + more[/dim]"  # pyright: ignore
+            "[dim]>> Examples: \\[cyan]This is blue\\[/cyan] -> [cyan]This is blue[/cyan], + more[/dim]"  # pyright: ignore
             "\n\nIn this section, you can choose to write the review [italic cyan]directly[/] in the terminal [default] (press [yellow]`ENTER`[/])\nor using your [italic cyan]default text editor[/] [yellow](type `y`, `ENTER`)[/]",
             type="info",
         )
@@ -338,6 +366,23 @@ def interactive(title: str):
         movie: dict = movie_manager.fetch_movie_metadata(imdbid=selected_id)
         poster_path = movie_manager.fetch_poster()
 
+        rt_data = movie_manager.fetch_rt_data(
+            movie['title'], movie['year'],
+            tomato_url=movie.get('tomato_url')
+        )
+        if rt_data and rt_data.get("rt_tomatometer") is not None:
+            movie.update(rt_data)
+            from .rt import normalize_review_count
+            critic_fmt = normalize_review_count(rt_data.get("rt_critic_reviews"))
+            audience_fmt = normalize_review_count(rt_data.get("rt_audience_reviews"))
+            moai.says(
+                f"[hot_pink2]✓ I just searched (rottentomatoes.com) and found the RT scores "
+                f"->  [bold]{rt_data['rt_tomatometer']}% ({critic_fmt})[/bold], "
+                f"󰐢 [bold]{rt_data['rt_audience_score']}% ({audience_fmt})[/bold]\n"
+                f"               ref: [cyan3 underline]{rt_data.get('tomato_url', movie.get('tomato_url', 'https://www.rottentomatoes.com/m/' + movie['title'].lower().replace(' ', '_')))}[/]",
+                type="rt"
+            )
+
         if poster_path == None:
             poster_path = "N/A"
         else:
@@ -350,6 +395,8 @@ def interactive(title: str):
 
         if movie_already_reviewed:
             movie = movie_already_reviewed
+            if rt_data and rt_data.get("rt_tomatometer") is not None:
+                movie.update(rt_data)
             already_reviewed = True
 
         star_review = edit(movie, poster_path, already_reviewed)
@@ -413,6 +460,8 @@ def list():
             "Save", save, movie=movie, poster_local_path=movie["poster_local_path"]
         )
         menu.add_feature("Change Poster", poster, poster_path="", imdbid=imdbid)
+        menu.add_feature("Fetch RT", fetch_rt, imdbid=imdbid)
+        menu.add_feature("Refresh", refresh, imdbid=imdbid)
 
         menu.run(imdbid=imdbid)
 
@@ -517,6 +566,15 @@ def preview(
     elif title:
         previewed_movie = database_manager.get_movie_metadata_by_title(title)
 
+    if previewed_movie and not previewed_movie.get("rt_tomatometer"):
+        rt_data = movie_manager.fetch_rt_data(
+            previewed_movie["title"], previewed_movie["year"],
+            tomato_url=previewed_movie.get("tomato_url")
+        )
+        if rt_data and rt_data.get("rt_tomatometer") is not None:
+            previewed_movie.update(rt_data)
+            database_manager.set_rt_scores(previewed_movie["imdbid"], rt_data)
+
     print(poster_path)
     if poster_path == "":
         display_manager = DisplayManager(
@@ -530,6 +588,111 @@ def preview(
         display_manager.display_movie_info(
             previewed_movie["star"], previewed_movie["review"]
         )
+
+
+@app.command(hidden=True)
+def fetch_rt(
+    imdbid: Optional[str] = typer.Option(
+        None, "--id", "-i", help="Fetch RT data for movie with imdbid (tt..)"
+    ),
+):
+    """Manually provide a Rotten Tomatoes URL to fetch scores"""
+    if not imdbid:
+        return
+    movie = database_manager.get_movie_metadata_by_imdbid(imdbid)
+    if not movie:
+        moai.says(f"[indian_red]x Movie not found[/]", type="error")
+        return
+    
+    moai.says(
+        f"[hot_pink2]Paste the Rotten Tomatoes URL for {movie['title']} ({movie['year']})[/]\n"
+        "[dim]>> Examples: https://www.rottentomatoes.com/m/...",
+        type="rt"
+    )
+    tomato_url = click.prompt("MVW  ", prompt_suffix="> ")
+    
+    if not tomato_url:
+        return
+    with console.status("[bold]Fetching Rotten Tomatoes data...", spinner="earth"):
+        rt_data = movie_manager.fetch_rt_data(
+            movie["title"], movie["year"], tomato_url=tomato_url
+        )
+    if rt_data and rt_data.get("rt_tomatometer") is not None:
+        database_manager.set_rt_scores(imdbid, rt_data)
+        preview(imdbid=imdbid)
+    else:
+        moai.says(
+            f"[indian_red]x Could not extract RT scores from that URL[/]",
+            type="error"
+        )
+
+
+@app.command(hidden=True)
+def refresh(
+    imdbid: Optional[str] = typer.Option(
+        None, "--id", "-i", help="Refresh movie data for imdbid (tt..)"
+    ),
+):
+    """Re-fetch all data from OMDB, RT, and box office"""
+    if not imdbid:
+        return
+    existing = database_manager.get_movie_metadata_by_imdbid(imdbid)
+    if not existing:
+        moai.says(f"[indian_red]x Movie not found[/]", type="error")
+        return
+    fresh = movie_manager.fetch_movie_metadata(imdbid)
+    if not fresh:
+        return
+
+    worldwide_bo = ConfigManager().get_config("DATA", "worldwide_boxoffice").lower() == "true"
+
+    omdb_map = [
+        ("title", "title"), ("year", "year"), ("rated", "rated"),
+        ("released", "released"), ("runtime", "runtime"), ("genre", "genre"),
+        ("director", "director"), ("writer", "writer"), ("actors", "actors"),
+        ("plot", "plot"), ("language", "language"), ("country", "country"),
+        ("awards", "awards"), ("metascore", "metascore"),
+        ("imdbrating", "imdbrating"), ("imdbvotes", "imdbvotes"),
+        ("production", "production"),
+        ("website", "website"), ("dvd", "dvd"), ("type", "type"),
+        ("poster_link", "poster"),
+    ]
+    if not worldwide_bo:
+        omdb_map.append(("boxoffice", "boxoffice"))
+    for db_col, omdb_key in omdb_map:
+        new_val = fresh.get(omdb_key)
+        old_val = existing.get(db_col)
+        if new_val is not None and str(new_val) != str(old_val):
+            database_manager.set_key_value(imdbid, db_col, new_val)
+
+    with console.status("[bold]Fetching Rotten Tomatoes data...", spinner="earth"):
+        rt_data = movie_manager.fetch_rt_data(
+            fresh.get("title", existing["title"]),
+            fresh.get("year", existing["year"]),
+            tomato_url=existing.get("tomato_url") or fresh.get("tomato_url"),
+        )
+    if rt_data and rt_data.get("rt_tomatometer") is not None:
+        for key in ("rt_tomatometer", "rt_audience_score", "rt_certification", "rt_critic_reviews", "rt_audience_reviews"):
+            new_val = rt_data[key]
+            old_val = existing.get(key)
+            if new_val is not None and str(new_val) != str(old_val):
+                database_manager.set_key_value(imdbid, key, new_val)
+        from .rt import normalize_review_count
+        critic_fmt = normalize_review_count(rt_data.get("rt_critic_reviews"))
+        audience_fmt = normalize_review_count(rt_data.get("rt_audience_reviews"))
+        moai.says(
+            f"[hot_pink2]✓ I just searched (rottentomatoes.com) and found the RT scores "
+            f"->  [bold]{rt_data['rt_tomatometer']}% ({critic_fmt})[/bold], "
+            f"󰐢 [bold]{rt_data['rt_audience_score']}% ({audience_fmt})[/bold]\n"
+            f"               ref: [cyan3 underline]{rt_data.get('tomato_url', existing.get('tomato_url', 'https://www.rottentomatoes.com/m/' + existing['title'].lower().replace(' ', '_')))}[/]",
+            type="rt"
+        )
+
+    if worldwide_bo:
+        database_manager.set_movie_boxoffice_to_worldwide(imdbid)
+
+    moai.says(f"[sky_blue1]✓ Refresh complete for {existing['title']}[/]", type="info")
+    preview(imdbid=imdbid)
 
 
 @app.command()

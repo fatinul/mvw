@@ -1,5 +1,6 @@
 bs4>=0.0.2
 iterfzf>=1.8.0.62.0
+omdb>=0.10.0
 platformdirs>=4.5.1
 requests>=2.32.5
 rich>=14.2.0

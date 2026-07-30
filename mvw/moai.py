@@ -25,7 +25,8 @@ MOODS = {
     "error":  {"mouth": "△═", "icon": "❗", "color": "indian_red"},
     "sad":    {"mouth": "︿", "icon": "💧", "color": "dim light_steel_blue3"},
     "fun":    {"mouth": "⛛ ", "icon": "✦𓈒", "color": "green"},
-    "nerd":   {"mouth": "3═", "icon": "👆", "color": "yellow"}
+    "nerd":   {"mouth": "3═", "icon": "👆", "color": "yellow"},
+    "rt":   {"mouth": "ᗜ ", "icon": "🍅", "color": "hot_pink2"}
 }
 
 NO_MOAI = ''''''
@@ -87,3 +88,4 @@ if __name__ == "__main__":
     Moai().says(f"Hi sad", type="sad")
     Moai().says(f"Hi fun", type="fun")
     Moai().says(f"Hi nerd", type="nerd")
+    Moai().says(f"Hi RT", type="rt")

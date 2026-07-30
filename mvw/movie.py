@@ -84,6 +84,37 @@ class MovieManager:
             except Exception as e:
                 moai.says(f"[indian_red]x Sorry, Web Scrapping Error ({e}) occured.[/]", type="error")
 
+    def fetch_rt_data(self, title: str, year: str, tomato_url: str | None = None):
+        """Fetch Rotten Tomatoes data by movie title and year"""
+        from .rt import fetch_rotten_tomatoes_data
+        debug = config_manager.get_config("UI", "debug").lower() == "true"
+        with console.status("[bold]Fetching Rotten Tomatoes data...", spinner="earth"):
+            try:
+                if not tomato_url:
+                    tomato_url = self._fetch_tomato_url(title, year, debug)
+                return fetch_rotten_tomatoes_data(title, year, tomato_url=tomato_url, debug=debug)
+            except Exception:
+                return None
+
+    def _fetch_tomato_url(self, title: str, year: str, debug: bool = False) -> str | None:
+        """Use the omdb library to get the tomato_url from OMDB API"""
+        import omdb
+        from .rt import _debug_print
+        omdb.set_default("apikey", self.api_key)
+        _debug_print(f"Fetching tomato_url via omdb lib: title={title}, year={year}", debug)
+        try:
+            result = omdb.get(title=title, year=year, tomatoes=True)
+            tomato_url = result.get("tomato_url") if isinstance(result, dict) else None
+            _debug_print(f"omdb lib response type: {type(result)}", debug)
+            _debug_print(f"omdb lib tomato_url: {tomato_url}", debug)
+            if debug and isinstance(result, dict):
+                tomato_keys = {k: v for k, v in result.items() if "tomato" in k}
+                _debug_print(f"omdb lib tomato fields: {tomato_keys}", debug)
+            return tomato_url
+        except Exception as e:
+            _debug_print(f"omdb lib error: {type(e).__name__}: {e}", debug)
+            return None
+
     def fetch_poster(self):
         """Fetch movie poster and store in posters in data"""
         poster_link = self.movie['poster'] # pyright: ignore

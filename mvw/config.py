@@ -43,6 +43,7 @@ class ConfigManager:
             "hide_key": "true",
             "render": "pixel",
             "charset": "minimal",
+            "debug": "false",
         }
         self.config["DATA"] = {"worldwide_boxoffice": "false"}
 
