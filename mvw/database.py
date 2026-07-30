@@ -43,7 +43,8 @@ INIT_TABLE = '''
             rt_audience_score INTEGER,
             rt_certification TEXT,
             rt_critic_reviews INTEGER,
-            rt_audience_reviews INTEGER
+            rt_audience_reviews INTEGER,
+            rt_url TEXT
         );
     '''
 
@@ -53,7 +54,7 @@ TABLE_COLUMNS = [
     "poster_link", "metascore", "imdbrating", "imdbvotes", "type", "dvd",
     "boxoffice", "production", "website", "poster_local_path", "star", "review",
     "rt_tomatometer", "rt_audience_score", "rt_certification", "rt_critic_reviews",
-    "rt_audience_reviews",
+    "rt_audience_reviews", "rt_url",
 ]
 
 INT_COLUMNS = {"rt_tomatometer", "rt_audience_score", "rt_critic_reviews", "rt_audience_reviews"}
@@ -99,10 +100,11 @@ class DatabaseManager:
                     actors, plot, language, country, awards, poster_link, metascore,
                     imdbrating, imdbvotes, imdbid, type, dvd, boxoffice, production,
                     website, poster_local_path, star, review,
-                    rt_tomatometer, rt_audience_score, rt_certification, rt_critic_reviews, rt_audience_reviews
+                    rt_tomatometer, rt_audience_score, rt_certification, rt_critic_reviews, rt_audience_reviews,
+                    rt_url
                 )
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
-                        ?, ?, ?, ?, ?)
+                        ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(imdbid) DO UPDATE SET
                     title=excluded.title,
                     year=excluded.year,
@@ -133,7 +135,8 @@ class DatabaseManager:
                     rt_audience_score=excluded.rt_audience_score,
                     rt_certification=excluded.rt_certification,
                     rt_critic_reviews=excluded.rt_critic_reviews,
-                    rt_audience_reviews=excluded.rt_audience_reviews
+                    rt_audience_reviews=excluded.rt_audience_reviews,
+                    rt_url=excluded.rt_url
             ''',(
                     movie['title'], movie['year'], movie['rated'], movie['released'],
                     movie['runtime'], movie['genre'], movie['director'], movie['writer'],
@@ -143,7 +146,8 @@ class DatabaseManager:
                     movie['boxoffice'], movie['production'], movie['website'], poster_local_path, star, review,
                     movie.get('rt_tomatometer'), movie.get('rt_audience_score'),
                     movie.get('rt_certification'), movie.get('rt_critic_reviews'),
-                    movie.get('rt_audience_reviews')
+                    movie.get('rt_audience_reviews'),
+                    movie.get('rt_url')
                 )
             )
             if ConfigManager().get_config("DATA", "worldwide_boxoffice").lower() == "true":
@@ -154,20 +158,20 @@ class DatabaseManager:
             if not movie.get('rt_tomatometer'):
                 rt_data = movie_manager.fetch_rt_data(
                     movie['title'], movie['year'],
-                    tomato_url=movie.get('tomato_url')
+                    tomato_url=movie.get('rt_url')
                 )
                 if rt_data and rt_data.get('rt_tomatometer') is not None:
                     movie.update(rt_data)
+                    self.set_rt_scores(movie['imdbid'], rt_data)
                     from .rt import normalize_review_count
                     critic_fmt = normalize_review_count(rt_data.get('rt_critic_reviews'))
                     audience_fmt = normalize_review_count(rt_data.get('rt_audience_reviews'))
                     moai.says(
-                        f"[yellow]✓ I just searched (rottentomatoes.com) and found the RT scores "
-                        f"-> Tomatometer: [bold]{rt_data['rt_tomatometer']}%[/bold], "
-                        f"Audience: [bold]{rt_data['rt_audience_score']}%[/bold]\n"
-                        f"               Critic reviews: {critic_fmt}, Audience reviews: {audience_fmt}\n"
-                        f"               ref: [sky_blue2 underline]{movie.get('tomato_url', 'https://www.rottentomatoes.com/m/' + movie['title'].lower().replace(' ', '_'))}[/]",
-                        type="nerd"
+                        f"[hot_pink2]✓ I just searched (rottentomatoes.com) and found the RT scores "
+                        f"->  [bold]{rt_data['rt_tomatometer']}% ({critic_fmt})[/bold], "
+                        f"󰐢 [bold]{rt_data['rt_audience_score']}% ({audience_fmt})[/bold]\n"
+                        f"               ref: [cyan3 underline]{rt_data.get('rt_url', movie.get('rt_url', 'https://www.rottentomatoes.com/m/' + movie['title'].lower().replace(' ', '_')))}[/]",
+                        type="rt"
                     )
 
             self.conn.commit()
@@ -297,7 +301,8 @@ class DatabaseManager:
                     rt_audience_score = ?,
                     rt_certification = ?,
                     rt_critic_reviews = ?,
-                    rt_audience_reviews = ?
+                    rt_audience_reviews = ?,
+                    rt_url = ?
                 WHERE imdbid = ?
             ''', (
                 rt_data.get("rt_tomatometer"),
@@ -305,6 +310,7 @@ class DatabaseManager:
                 rt_data.get("rt_certification"),
                 rt_data.get("rt_critic_reviews"),
                 rt_data.get("rt_audience_reviews"),
+                rt_data.get("rt_url"),
                 imdbid,
             ))
             self.conn.commit()

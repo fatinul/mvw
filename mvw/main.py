@@ -298,7 +298,7 @@ def edit(movie, poster_path: str = "", already_reviewed: bool = True):
         moai.says(
             "The review section [italic]supports[/] [medium_purple1]rich[/] format.\n"
             "You can learn more at [sky_blue2 underline]https://rich.readthedocs.io/en/stable/markup.html[/]\n"
-            "[dim]>> Examples: \\[blue]This is blue\\[/blue] -> [blue]This is blue[/blue], + more[/dim]"  # pyright: ignore
+            "[dim]>> Examples: \\[cyan]This is blue\\[/cyan] -> [cyan]This is blue[/cyan], + more[/dim]"  # pyright: ignore
             "\n\nIn this section, you can choose to write the review [italic cyan]directly[/] in the terminal [default] (press [yellow]`ENTER`[/])\nor using your [italic cyan]default text editor[/] [yellow](type `y`, `ENTER`)[/]",
             type="info",
         )
@@ -370,8 +370,18 @@ def interactive(title: str):
             movie['title'], movie['year'],
             tomato_url=movie.get('tomato_url')
         )
-        if rt_data:
+        if rt_data and rt_data.get("rt_tomatometer") is not None:
             movie.update(rt_data)
+            from .rt import normalize_review_count
+            critic_fmt = normalize_review_count(rt_data.get("rt_critic_reviews"))
+            audience_fmt = normalize_review_count(rt_data.get("rt_audience_reviews"))
+            moai.says(
+                f"[hot_pink2]✓ I just searched (rottentomatoes.com) and found the RT scores "
+                f"->  [bold]{rt_data['rt_tomatometer']}% ({critic_fmt})[/bold], "
+                f"󰐢 [bold]{rt_data['rt_audience_score']}% ({audience_fmt})[/bold]\n"
+                f"               ref: [cyan3 underline]{rt_data.get('tomato_url', movie.get('tomato_url', 'https://www.rottentomatoes.com/m/' + movie['title'].lower().replace(' ', '_')))}[/]",
+                type="rt"
+            )
 
         if poster_path == None:
             poster_path = "N/A"
@@ -385,7 +395,7 @@ def interactive(title: str):
 
         if movie_already_reviewed:
             movie = movie_already_reviewed
-            if rt_data:
+            if rt_data and rt_data.get("rt_tomatometer") is not None:
                 movie.update(rt_data)
             already_reviewed = True
 
@@ -593,9 +603,14 @@ def fetch_rt(
     if not movie:
         moai.says(f"[indian_red]x Movie not found[/]", type="error")
         return
-    tomato_url = click.prompt(
-        f"Paste the Rotten Tomatoes URL for {movie['title']}"
+    
+    moai.says(
+        f"[hot_pink2]Paste the Rotten Tomatoes URL for {movie['title']} ({movie['year']})[/]\n"
+        "[dim]>> Examples: https://www.rottentomatoes.com/m/...",
+        type="rt"
     )
+    tomato_url = click.prompt("MVW  ", prompt_suffix="> ")
+    
     if not tomato_url:
         return
     with console.status("[bold]Fetching Rotten Tomatoes data...", spinner="earth"):
@@ -666,12 +681,11 @@ def refresh(
         critic_fmt = normalize_review_count(rt_data.get("rt_critic_reviews"))
         audience_fmt = normalize_review_count(rt_data.get("rt_audience_reviews"))
         moai.says(
-            f"[yellow]✓ I just searched (rottentomatoes.com) and found the RT scores "
-            f"-> Tomatometer: [bold]{rt_data['rt_tomatometer']}%[/bold], "
-            f"Audience: [bold]{rt_data['rt_audience_score']}%[/bold]\n"
-            f"               Critic reviews: {critic_fmt}, Audience reviews: {audience_fmt}\n"
-            f"               ref: [sky_blue2 underline]{rt_data.get('tomato_url', existing.get('tomato_url', 'https://www.rottentomatoes.com/m/' + existing['title'].lower().replace(' ', '_')))}[/]",
-            type="nerd"
+            f"[hot_pink2]✓ I just searched (rottentomatoes.com) and found the RT scores "
+            f"->  [bold]{rt_data['rt_tomatometer']}% ({critic_fmt})[/bold], "
+            f"󰐢 [bold]{rt_data['rt_audience_score']}% ({audience_fmt})[/bold]\n"
+            f"               ref: [cyan3 underline]{rt_data.get('tomato_url', existing.get('tomato_url', 'https://www.rottentomatoes.com/m/' + existing['title'].lower().replace(' ', '_')))}[/]",
+            type="rt"
         )
 
     if worldwide_bo:

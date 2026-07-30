@@ -160,6 +160,7 @@ def fetch_rotten_tomatoes_data(
             "rt_certification": certification,
             "rt_critic_reviews": scores["critic_reviews"],
             "rt_audience_reviews": scores["audience_reviews"],
+            "rt_url": tomato_url,
         }
         _debug_print(f"Final result: {result}", debug)
         _debug_print("=== RT Fetch End ===", debug)
