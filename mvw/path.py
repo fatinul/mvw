@@ -18,6 +18,9 @@ class PathManager:
         self.poster_dir = self.data_dir / "posters"
         self.poster_dir.mkdir(parents=True, exist_ok=True)
 
+        self.cache_dir = self.data_dir / "cache"
+        self.cache_dir.mkdir(parents=True, exist_ok=True)
+
         self.screenshot_dir = Path(user_pictures_dir())
         self.screenshot_dir.mkdir(parents=True, exist_ok=True)
 

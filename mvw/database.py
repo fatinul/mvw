@@ -1,5 +1,6 @@
 import sqlite3
 import atexit
+import io
 
 from mvw.config import ConfigManager
 
@@ -175,6 +176,10 @@ class DatabaseManager:
                     )
 
             self.conn.commit()
+            movie['star'] = star
+            movie['review'] = review
+            movie['poster_local_path'] = poster_local_path
+            self._generate_preview_cache(movie)
 
             moai.says(f"[green]✓ {movie['title']} [italic]saved[/italic] successfully[/]", type="fun")
         except Exception as e:
@@ -191,6 +196,9 @@ class DatabaseManager:
                 WHERE imdbid = ?
             ''', (star, review, imdbid))
             self.conn.commit()
+            movie = self.get_movie_metadata_by_imdbid(imdbid)
+            if movie:
+                self._generate_preview_cache(movie)
         except Exception as e:
             self.conn.rollback()
             moai.says(f"[indian_red]x Sorry, Database error: ({e}) occured[/]\n[dim]This should not happen, up an issue to the dev[/]", type="error")
@@ -314,6 +322,10 @@ class DatabaseManager:
                 imdbid,
             ))
             self.conn.commit()
+            movie = self.get_movie_metadata_by_imdbid(imdbid)
+            if movie:
+                movie.update(rt_data)
+                self._generate_preview_cache(movie)
             moai.says("[green]✓ Rotten Tomatoes scores [italic]updated[/italic] successfully[/]", type="fun")
         except Exception as e:
             moai.says(f"[indian_red]x Sorry, Database error: ({e}) occured[/]\n[dim]This should not happen, up an issue to the dev[/]", type="error")
@@ -348,6 +360,29 @@ class DatabaseManager:
             "missing_rt_count": missing_rt,
             "movies": movies,
         }
+
+    def _generate_preview_cache(self, movie: dict):
+        """Generate/update the ANSI preview cache file for fzf"""
+        from rich.console import Console as RichConsole
+        from .display import DisplayManager
+        try:
+            cache_file = path.cache_dir / f"{movie['imdbid']}.txt"
+            buf = io.StringIO()
+            capture = RichConsole(
+                file=buf, width=100, force_terminal=True,
+                color_system="truecolor", legacy_windows=False,
+            )
+            display = DisplayManager(movie, movie.get("poster_local_path", ""))
+            display.display_movie_info(
+                star=float(movie["star"]) if movie.get("star") is not None else 0,
+                review_text=movie.get("review") or "",
+                output_console=capture,
+            )
+            content = buf.getvalue()
+            if content.strip():
+                cache_file.write_text(content, encoding="utf-8")
+        except Exception:
+            pass
 
     def close_db(self):
         """Call this when the cli shuts down"""

@@ -54,18 +54,20 @@ class DisplayManager:
         console.print(f"[{palette.style.get('review_text')}]REVIEW_TEXT[/]")
 
     def display_movie_info(
-        self, star: float = 0.0, review_text: str = "Your review will show here."
+        self, star: float = 0.0, review_text: str = "Your review will show here.",
+        output_console: Console | None = None,
     ):
         """The Movie Review Card"""
+        out = output_console or console
         reviewer_name = config_manager.get_config("USER", "name")
         suffix = "'s" if reviewer_name else ""
 
         try:
-            current_term_width = console.width
+            current_term_width = out.width
             poster_panel = self.poster_panel()
 
             review_header = Text.from_markup(
-                f"[{str(palette.style.get('review_text', 'cyan'))} bold]󰭹 {reviewer_name.upper()}{suffix} REVIEW :[/] [{str(palette.style.get('imdb_gold', 'yellow'))}]{self.iconize_star(float(star))}[/]"
+                f"[{str(palette.style.get('review_text', 'cyan'))} bold]󰭹 {reviewer_name.upper()}{suffix} REVIEW :[/] [{str(palette.style.get('imdb_gold', 'yellow'))}]{self.iconize_star(float(star or 0))}[/]"
             )
             review = Text.from_markup(
                 review_text
@@ -111,7 +113,7 @@ class DisplayManager:
             full_panel = Panel(
                 main_layout, box=box.SIMPLE_HEAD, width=min(100, current_term_width)
             )
-            console.print(full_panel)
+            out.print(full_panel)
         except KeyError:
             moai.says(
                 f"[yellow]x Ermm.. actually TV Shows are currently not supported[/]",

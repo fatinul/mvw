@@ -435,10 +435,17 @@ def list():
     """List all the reviewed movies"""
     all_reviewed_movies = database_manager.get_all_movies()
 
-    movie_map = {movie["title"]: movie for movie in all_reviewed_movies}
+    movie_map = {f"[{movie['imdbid']}] {movie['title']}": movie for movie in all_reviewed_movies}
+
+    for movie in all_reviewed_movies:
+        cache_file = path.cache_dir / f"{movie['imdbid']}.txt"
+        if not cache_file.exists():
+            database_manager._generate_preview_cache(movie)
+
+    preview_cmd = f'"{sys.executable}" -m mvw._preview_helper "{path.cache_dir}" {{}}'
 
     selected_title = iterfzf(
-        movie_map.keys(), preview="mvw preview -t {}", ansi=True, multi=False
+        movie_map.keys(), preview=preview_cmd, ansi=True, multi=False
     )
 
     if selected_title:
@@ -463,7 +470,8 @@ def list():
         menu.add_feature("Fetch RT", fetch_rt, imdbid=imdbid)
         menu.add_feature("Refresh", refresh, imdbid=imdbid)
 
-        menu.run(imdbid=imdbid)
+        menu_preview_cmd = f'"{sys.executable}" -m mvw._preview_helper "{path.cache_dir}" "{imdbid}"'
+        menu.run(imdbid=imdbid, preview_cmd=menu_preview_cmd)
 
 
 @app.command()

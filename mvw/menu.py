@@ -14,13 +14,14 @@ class MenuManager:
             "kwargs": kwargs,
         }
 
-    def run(self, imdbid: str, prompt: str = "Select an option:"):
+    def run(self, imdbid: str, prompt: str = "Select an option:", preview_cmd: str | None = None):
         """Display menu and execute"""
         options = list(self.features.keys())
         choice = iterfzf(
             options,
             prompt = f"{prompt} >",
-            preview=f"mvw preview -i {imdbid}",
+            preview=preview_cmd or f"mvw preview -i {imdbid}",
+            ansi=True,
         )
 
         if choice and choice in self.features:
