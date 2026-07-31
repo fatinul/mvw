@@ -754,5 +754,23 @@ def main(ctx: typer.Context):
         interactive("")
 
 
+def main_run():
+    """Entry point for the mvw CLI with graceful interrupt handling"""
+    try:
+        code = app(standalone_mode=False)
+        if code:
+            raise SystemExit(code)
+    except KeyboardInterrupt:
+        # add a new line before the goodbye message
+        print()
+        moai.says("[dim]Goodbye, see you again later..[/]", type="sad")
+    except click.exceptions.Abort:
+        print()
+        moai.says("[dim]Goodbye, see you again later..[/]", type="sad")
+    except click.exceptions.ClickException as e:
+        e.show()
+        raise SystemExit(e.exit_code)
+
+
 if __name__ == "__main__":
-    app()
+    main_run()

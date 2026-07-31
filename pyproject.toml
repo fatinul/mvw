@@ -41,7 +41,7 @@ Repository = "https://github.com/fatinul/mvw"
 Changelog = "https://github.com/fatinul/mvw/releases"
 
 [project.scripts]
-mvw = "mvw.main:app"
+mvw = "mvw.main:main_run"
 
 [tool.uv]
 package = true
