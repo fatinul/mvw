@@ -371,11 +371,12 @@ wheels = [
 
 [[package]]
 name = "mvw"
-version = "0.6.0"
+version = "0.6.1"
 source = { editable = "." }
 dependencies = [
     { name = "asciify-them" },
     { name = "bs4" },
+    { name = "click" },
     { name = "iterfzf" },
     { name = "numpy" },
     { name = "omdb" },
@@ -391,6 +392,7 @@ dependencies = [
 requires-dist = [
     { name = "asciify-them", specifier = ">=1.1.0" },
     { name = "bs4", specifier = ">=0.0.2" },
+    { name = "click", specifier = ">=8.3.1" },
     { name = "iterfzf", specifier = ">=1.8.0.62.0" },
     { name = "numpy", specifier = ">=1.24.0" },
     { name = "omdb", specifier = ">=0.10.0" },

@@ -1,6 +1,6 @@
 [project]
 name = "mvw"
-version = "0.6.0"
+version = "0.6.1"
 description = "CLI commands to catalogue all your movie reviews"
 readme = "README.md"
 authors = [
@@ -32,6 +32,7 @@ dependencies = [
     "Pillow>=10.0.0",
     "numpy>=1.24.0",
     "asciify-them>=1.1.0",
+    "click>=8.3.1",
 ]
 
 [project.urls]
